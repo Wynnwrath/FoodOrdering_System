@@ -1,0 +1,62 @@
+[
+  {
+    "id": 4,
+    "name": "Coke",
+    "price": 3,
+    "category": "Drinks"
+  },
+  {
+    "id": 5,
+    "name": "Cheese Burger",
+    "price": 11.5,
+    "category": "Burgers"
+  },
+  {
+    "id": 6,
+    "name": "Veggie Pizza",
+    "price": 12,
+    "category": "Pizza"
+  },
+  {
+    "id": 7,
+    "name": "Greek Salad",
+    "price": 8.5,
+    "category": "Salads"
+  },
+  {
+    "id": 8,
+    "name": "Lemonade",
+    "price": 2.5,
+    "category": "Drinks"
+  },
+  {
+    "id": 9,
+    "name": "Grilled Chicken Sandwich",
+    "price": 10,
+    "category": "Sandwiches"
+  },
+  {
+    "id": 10,
+    "name": "Fish and Chips",
+    "price": 14,
+    "category": "Seafood"
+  },
+  {
+    "name": "BaconBurger",
+    "price": 5.09,
+    "category": "Salads",
+    "id": 11
+  },
+  {
+    "name": "WhiteMan",
+    "price": 2323232,
+    "category": "Human",
+    "id": 12
+  },
+  {
+    "name": "Amongus",
+    "price": 9.99,
+    "category": "human",
+    "id": 13
+  }
+]

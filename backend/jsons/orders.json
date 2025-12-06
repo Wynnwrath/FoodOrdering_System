@@ -1,0 +1,50 @@
+[
+  {
+    "orders": [
+      {
+        "itemId": 5,
+        "quantity": 4
+      },
+      {
+        "itemId": 2,
+        "quantity": 2
+      }
+    ],
+    "subtotal": 75,
+    "tax": 2.25,
+    "total": 77.25,
+    "id": 1,
+    "status": "COMPLETED"
+  },
+  {
+    "orders": [
+      {
+        "itemId": 8,
+        "quantity": 3
+      }
+    ],
+    "subtotal": 7.5,
+    "tax": 0.22499999999999998,
+    "total": 7.725,
+    "id": 2,
+    "status": "COMPLETED"
+  },
+  {
+    "id": 3,
+    "status": "PENDING",
+    "orders": [
+      {
+        "itemId": 8,
+        "quantity": 3
+      },
+      {
+        "itemId": 13,
+        "quantity": 2
+      }
+    ],
+    "subtotal": 27.48,
+    "tax": 0.8244,
+    "total": 28.3044,
+    "createdAt": "2025-12-01T16:11:32.138Z"
+  }
+]

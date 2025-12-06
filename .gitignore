@@ -1,0 +1,55 @@
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+dashboard/dist/
+
+# Vite cache
+.vite/
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# Environment files
+.env
+.env.*
+backend/.env
+dashboard/.env
+
+# Prisma
+prisma/dev.db
+
+# Editor and OS files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+Thumbs.db
+
+# Coverage and test output
+coverage/
+.nyc_output/
+jest.cache
+
+# Misc
+.parcel-cache/
+.cache/
+*.localhistory
+*.pem
+*.key
+
+# Optional: lockfiles (keep if you want deterministic installs)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
