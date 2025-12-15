@@ -13,7 +13,7 @@ function App() {
       <Routes>
 
         {/* Login */}
-        <Route path="/" element={<MainPage />} />
+        <Route path="/" element={<WaiterPage />} />
         <Route path="login" element={<LoginPage />} />
 
         {/* Main layout */}

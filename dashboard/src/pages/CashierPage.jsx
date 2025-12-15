@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+// NOTE: Ensure your API_BASE is correctly pointing to your Node.js port (3000)
+// when running via adb reverse. This line is correct for that setup.
 const API_BASE = "http://localhost:3000";
 
 export default function CashierPage() {
@@ -51,6 +53,7 @@ export default function CashierPage() {
   useEffect(() => {
     fetchServedOrders();
     fetchMenu();
+    // No polling interval here as the list is only updated when served
   }, []);
 
   const menuMap = useMemo(() => {
@@ -75,6 +78,7 @@ export default function CashierPage() {
     }, 0);
   }, [selectedOrder, menuMap]);
 
+  // Use the total from the order object if available, otherwise compute it
   const totalDue = selectedOrder ? selectedOrder.total ?? computedTotal : 0;
   const numericCash = Number(cashGiven) || 0;
   const change = Math.max(numericCash - totalDue, 0);
@@ -129,13 +133,16 @@ export default function CashierPage() {
   };
 
   return (
-    <div className="h-full w-full bg-slate-900 text-white p-4 flex flex-col md:flex-row gap-4">
-      {/* Left: List of SERVED orders */}
-      <section className="w-full md:w-2/5 bg-slate-800 rounded-xl p-4 flex flex-col">
-        <header className="flex items-center justify-between mb-3">
+    // FIX: Removed w-screen/h-full and used calc() to reliably fill remaining space
+    // from the parent (MainPage.jsx) and prevent accidental overflow.
+    <div className="min-h-[calc(100vh-4rem)] w-full bg-slate-900 text-white p-2 sm:p-4 flex flex-col md:flex-row gap-4">
+    
+      {/* Left: List of SERVED orders - Made it first for desktop view, but stacked on mobile */}
+      <section className="w-full md:w-2/5 bg-slate-800 rounded-xl p-3 sm:p-4 flex flex-col">
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-2">
           <div>
             <h1 className="text-base md:text-lg font-semibold">SERVED Orders</h1>
-            <p className="text-[10px] md:text-xs text-slate-400">
+            <p className="text-[10px] sm:text-xs text-slate-400">
               Select an order to process payment.
             </p>
           </div>
@@ -147,42 +154,36 @@ export default function CashierPage() {
           </button>
         </header>
 
-        {ordersLoading && (
-          <p className="text-slate-300 text-sm">Loading orders...</p>
-        )}
-        {ordersError && (
-          <p className="text-red-400 text-sm mb-2">{ordersError}</p>
-        )}
+        {ordersLoading && <p className="text-slate-300 text-sm">Loading orders...</p>}
+        {ordersError && <p className="text-red-400 text-sm mb-2">{ordersError}</p>}
 
         {orders.length === 0 && !ordersLoading ? (
-          <p className="text-slate-400 text-sm">
-            No SERVED orders waiting for payment.
-          </p>
+          <p className="text-slate-400 text-sm">No SERVED orders waiting for payment.</p>
         ) : (
-          <div className="mt-2 space-y-2 overflow-auto max-h-72">
+          // FIX: Added flex-1 and h-full to the list container to manage vertical scrolling
+          <div className="mt-2 space-y-2 overflow-y-auto flex-1 max-h-96 md:max-h-full">
             {orders.map((order) => (
               <button
                 key={order.id}
                 onClick={() => handleSelectOrder(order.id)}
-                className={`w-full text-left p-3 rounded-lg border ${
+                className={`w-full text-left p-3 rounded-lg border transition-all ${
                   selectedOrderId === order.id
                     ? "border-emerald-400 bg-slate-900"
                     : "border-slate-700 bg-slate-800 hover:bg-slate-700"
                 }`}
               >
-                <div className="flex justify-between items-center">
+                {/* FIX: Changed inner flex to stack on mobile (flex-col) and justify on desktop (sm:flex-row) */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                   <div>
                     <p className="text-sm font-semibold">Order #{order.id}</p>
                     {order.tableNumber && (
-                      <p className="text-[10px] md:text-xs text-slate-400">
-                        Table: {order.tableNumber}
-                      </p>
+                      <p className="text-[10px] sm:text-xs text-slate-400">Table: {order.tableNumber}</p>
                     )}
-                    <p className="text-[10px] md:text-xs text-slate-500 mt-1">
+                    <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
                       Items: {order.orders?.length ?? 0}
                     </p>
                   </div>
-                  <div className="text-right text-sm">
+                  <div className="text-right text-sm mt-2 sm:mt-0">
                     <p className="text-slate-300">
                       Total: $
                       {(order.total ??
@@ -206,16 +207,14 @@ export default function CashierPage() {
       </section>
 
       {/* Right: Payment details */}
-      <section className="w-full md:flex-1 bg-slate-800 rounded-xl p-4 flex flex-col">
-        <header className="mb-4 flex items-center justify-between">
+      <section className="w-full md:flex-1 bg-slate-800 rounded-xl p-3 sm:p-4 flex flex-col">
+        <header className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-base md:text-lg font-semibold">Payment</h2>
-            <p className="text-[10px] md:text-xs text-slate-400">
-              Process payment for the selected order.
-            </p>
+            <p className="text-[10px] sm:text-xs text-slate-400">Process payment for the selected order.</p>
           </div>
           {selectedOrder && (
-            <div className="text-right text-[10px] md:text-xs text-slate-400">
+            <div className="text-[10px] sm:text-xs text-slate-400 text-right">
               <p>Order #{selectedOrder.id}</p>
               {selectedOrder.tableNumber && <p>Table {selectedOrder.tableNumber}</p>}
             </div>
@@ -223,21 +222,16 @@ export default function CashierPage() {
         </header>
 
         {!selectedOrder ? (
-          <p className="text-slate-400 text-sm">
-            Select an order from the left to start payment.
-          </p>
+          <p className="text-slate-400 text-sm">Select an order from the left to start payment.</p>
         ) : (
           <>
-            {/* Items list */}
-            <div className="flex-1 overflow-auto mb-4 border border-slate-700 rounded-lg p-3 max-h-72">
+            {/* Items list container */}
+            {/* FIX: Changed h-72 to h-full for better use of vertical space in the flex container */}
+            <div className="flex-1 overflow-y-auto mb-4 border border-slate-700 rounded-lg p-3">
               <h3 className="text-sm font-semibold mb-2">Items</h3>
-
-              {menuLoading && (
-                <p className="text-slate-400 text-xs">Loading menu...</p>
-              )}
-              {menuError && (
-                <p className="text-red-400 text-xs mb-2">{menuError}</p>
-              )}
+              
+              {menuLoading && <p className="text-slate-400 text-xs">Loading menu...</p>}
+              {menuError && <p className="text-red-400 text-xs mb-2">{menuError}</p>}
 
               <div className="space-y-1 text-sm">
                 {selectedOrder.orders?.map((item, idx) => {
@@ -248,9 +242,7 @@ export default function CashierPage() {
 
                   return (
                     <div key={idx} className="flex justify-between items-center">
-                      <span>
-                        {item.quantity} × {name}
-                      </span>
+                      <span>{item.quantity} × {name}</span>
                       <span className="text-slate-300">${lineTotal.toFixed(2)}</span>
                     </div>
                   );
@@ -264,13 +256,9 @@ export default function CashierPage() {
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>Tax (3%):</span>
-                  <span>
-                    ${(
-                      selectedOrder.tax ??
-                      selectedOrder.subtotal * 0.03 ??
-                      totalDue - totalDue / 1.03
-                    ).toFixed(2)}
-                  </span>
+                  <span>${(
+                    selectedOrder.tax ?? selectedOrder.subtotal * 0.03 ?? totalDue - totalDue / 1.03
+                  ).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold text-emerald-300 mt-2">
                   <span>Total Due:</span>
@@ -281,10 +269,9 @@ export default function CashierPage() {
 
             {/* Cash input */}
             <div className="border-t border-slate-700 pt-4 flex flex-col gap-3">
+              {/* FIX: Ensure label/input stack properly on small screens */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <label className="text-sm text-slate-300 w-full sm:w-32">
-                  Cash given
-                </label>
+                <label className="text-sm text-slate-300 w-full sm:w-32">Cash given</label>
                 <input
                   type="number"
                   step="0.01"
@@ -295,6 +282,7 @@ export default function CashierPage() {
                 />
               </div>
 
+              {/* FIX: Ensure label/value stack properly on small screens */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <span className="text-sm text-slate-300 w-full sm:w-32">Change</span>
                 <span className="text-lg font-semibold text-emerald-300">
@@ -306,7 +294,7 @@ export default function CashierPage() {
                 <button
                   onClick={handleConfirmPayment}
                   disabled={totalDue <= 0 || numericCash < totalDue}
-                  className="w-full sm:w-auto px-4 py-2 rounded-lg bg-emerald-500 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-400 transition"
+                  className="w-full sm:flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-400 transition"
                 >
                   Confirm Payment
                 </button>
@@ -315,7 +303,7 @@ export default function CashierPage() {
                     setSelectedOrderId(null);
                     setCashGiven("");
                   }}
-                  className="w-full sm:w-auto px-4 py-2 rounded-lg bg-slate-600 text-sm font-semibold hover:bg-slate-500 transition"
+                  className="w-full sm:flex-1 px-4 py-2 rounded-lg bg-slate-600 text-sm font-semibold hover:bg-slate-500 transition"
                 >
                   Cancel
                 </button>
@@ -324,6 +312,7 @@ export default function CashierPage() {
           </>
         )}
       </section>
+      
     </div>
   );
 }

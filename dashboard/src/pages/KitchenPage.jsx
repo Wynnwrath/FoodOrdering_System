@@ -47,7 +47,9 @@ export default function KitchenPage() {
   }, []);
 
   return (
-    <div className="h-full w-full bg-slate-900 text-white p-4 flex flex-col gap-6">
+    // FIX: Use min-h-calc to fill the height below the Navbar (4rem = h-16)
+    // FIX: Adjusted padding for better mobile fit (p-2 on small, p-4 on sm+)
+    <div className="min-h-[calc(100vh-4rem)] w-full bg-slate-900 text-white p-2 sm:p-4 flex flex-col gap-6">
       {/* Header */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
@@ -72,7 +74,8 @@ export default function KitchenPage() {
       )}
 
       {/* Orders grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* The grid is already responsive with grid-cols-1 on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 flex-1 overflow-y-auto">
         {orders.map((order) => {
           const computedTotal =
             order.items?.reduce((sum, item) => {
@@ -93,6 +96,8 @@ export default function KitchenPage() {
                 </span>
               </div>
 
+              {/* Order items detail area */}
+              {/* max-h-40 ensures the card height remains consistent, forcing scroll on longer orders */}
               <div className="space-y-1 max-h-40 overflow-auto pr-1 text-sm">
                 {order.items?.map((item) => {
                   const name = item.menu?.name || "Unknown item";
