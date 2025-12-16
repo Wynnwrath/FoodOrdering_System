@@ -47,34 +47,35 @@ export default function KitchenPage() {
   }, []);
 
   return (
-    // FIX: Use min-h-calc to fill the height below the Navbar (4rem = h-16)
-    // FIX: Adjusted padding for better mobile fit (p-2 on small, p-4 on sm+)
-    <div className="min-h-[calc(100vh-4rem)] w-full bg-slate-900 text-white p-2 sm:p-4 flex flex-col gap-6">
+    <div 
+      className="min-h-[calc(100vh-4rem)] w-full p-2 sm:p-4 flex flex-col gap-6 text-gray-900"
+      style={{ backgroundColor: 'var(--color-bg-primary)' }}
+    >
       {/* Header */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <h1 className="text-2xl font-bold">Kitchen Orders</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Showing orders with status: <span className="font-semibold">PENDING</span>
           </p>
         </div>
         <button
           onClick={fetchOrders}
-          className="px-4 py-2 rounded-lg bg-sky-500 text-sm font-semibold hover:bg-sky-400 transition"
+          className="px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-80 transition text-white"
+          style={{ backgroundColor: 'var(--color-accent-utility)' }}
         >
           Refresh
         </button>
       </header>
 
       {/* Status messages */}
-      {loading && <p className="text-slate-300">Loading orders...</p>}
-      {error && <p className="text-red-400 mb-2">{error}</p>}
+      {loading && <p className="text-gray-600">Loading orders...</p>}
+      {error && <p className="text-red-600 mb-2">{error}</p>}
       {!loading && orders.length === 0 && (
-        <p className="text-slate-400 mt-6">No pending orders right now.</p>
+        <p className="text-gray-500 mt-6">No pending orders right now.</p>
       )}
 
       {/* Orders grid */}
-      {/* The grid is already responsive with grid-cols-1 on mobile */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 flex-1 overflow-y-auto">
         {orders.map((order) => {
           const computedTotal =
@@ -87,18 +88,21 @@ export default function KitchenPage() {
           return (
             <div
               key={order.id}
-              className="bg-slate-800 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md transition"
+              className="rounded-xl p-4 flex flex-col shadow-xl transition hover:scale-[1.01]"
+              style={{ backgroundColor: 'var(--color-bg-card)', minHeight: '300px' }}
             >
               <div className="flex justify-between items-center mb-1">
                 <h2 className="font-semibold text-lg truncate">Order #{order.id}</h2>
-                <span className="text-xs px-2 py-1 rounded-full bg-amber-500/20 text-amber-300">
+                <span 
+                  className="text-xs px-2 py-1 rounded-full"
+                  style={{ color: 'var(--color-accent-total)', backgroundColor: 'var(--color-bg-status-served)' }}
+                >
                   {order.status}
                 </span>
               </div>
 
-              {/* Order items detail area */}
-              {/* max-h-40 ensures the card height remains consistent, forcing scroll on longer orders */}
-              <div className="space-y-1 max-h-40 overflow-auto pr-1 text-sm">
+              {/* Order items detail area - Use flex-1 to push total and button down */}
+              <div className="space-y-1 max-h-40 overflow-auto pr-1 text-sm flex-1">
                 {order.items?.map((item) => {
                   const name = item.menu?.name || "Unknown item";
                   const price = item.menu?.price || 0;
@@ -111,20 +115,26 @@ export default function KitchenPage() {
                       className="flex justify-between items-center"
                     >
                       <span className="truncate">{qty} × {name}</span>
-                      <span className="text-slate-300">${lineTotal.toFixed(2)}</span>
+                      <span className="text-gray-700">${lineTotal.toFixed(2)}</span>
                     </div>
                   );
                 })}
               </div>
 
-              <div className="border-t border-slate-700 mt-3 pt-2 text-sm flex justify-between text-slate-300">
+              <div className="border-t border-gray-300 mt-3 pt-2 text-sm flex justify-between text-gray-700">
                 <span>Total:</span>
-                <span className="font-semibold">${orderTotal.toFixed(2)}</span>
+                <span 
+                  className="font-bold" 
+                  style={{ color: 'var(--color-accent-total)' }}
+                >
+                  ${orderTotal.toFixed(2)}
+                </span>
               </div>
 
               <button
                 onClick={() => markCompleted(order.id)}
-                className="mt-3 w-full py-2 rounded-lg bg-emerald-500 text-sm font-semibold hover:bg-emerald-400 transition"
+                className="mt-3 w-full py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition text-white"
+                style={{ backgroundColor: 'var(--color-accent-success)' }}
               >
                 Mark as Completed
               </button>

@@ -1,0 +1,6 @@
+TO DO:
+
+    - java android studio
+    - fix waiter page
+    - refresh button for another day
+

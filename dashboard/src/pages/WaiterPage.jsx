@@ -1,42 +1,37 @@
 import { useMemo, useState, useEffect } from "react";
 
-// NOTE: This line is correct for your successful ADB setup.
 const API_BASE = "http://localhost:3000"; 
 
 const MODES = ["Take Order", "Serve Orders"];
 
-// --- Helper component for rendering individual menu items ---
+// --- Helper: Menu Item ---
 function MenuItem({ item, onAdd }) {
-  // Use a placeholder image if imageUrl is missing or blank
-  const itemImage = item.imageUrl || "https://via.placeholder.com/64?text=Food";
-
   return (
     <div 
       key={item.id} 
-      className="p-3 bg-slate-800 rounded-lg shadow-md flex justify-between items-center transition hover:bg-slate-700 cursor-pointer"
+      className="p-3 rounded-lg shadow flex justify-between items-center transition hover:shadow-lg cursor-pointer border border-transparent hover:border-gray-200"
+      style={{ backgroundColor: 'var(--color-bg-card)' }}
       onClick={() => onAdd(item)}
     >
-      {/* --- Image and Details --- */}
-      <div className="flex items-center gap-3">
-        {/* Image element: Small, rounded, and uses object-cover for clean look */}
-        <img 
-          src={itemImage} 
-          alt={item.name} 
-          className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-        />
-        
-        {/* Text Details */}
-        <div>
-          <h4 className="font-semibold text-white truncate">{item.name}</h4>
-          <p className="text-xs text-slate-400">{item.category}</p>
-          <span className="text-sm font-bold text-amber-300">${Number(item.price).toFixed(2)}</span>
+      <div className="flex items-center gap-3 overflow-hidden">
+        <div className="w-14 h-14 rounded-lg object-cover flex-shrink-0 bg-gray-200 flex items-center justify-center">
+            {item.imageUrl ? (
+                <img src={item.imageUrl} alt={item.name} className="w-full h-full rounded-lg object-cover" />
+            ) : (
+                <span className="text-[10px] text-gray-500 text-center">No Img</span>
+            )}
+        </div>
+        <div className="min-w-0">
+          <h4 className="font-semibold text-gray-900 truncate text-sm">{item.name}</h4>
+          <p className="text-xs text-gray-500 truncate">{item.category}</p>
+          <span className="text-sm font-bold" style={{ color: 'var(--color-accent-total)' }}>
+            ${Number(item.price).toFixed(2)}
+          </span>
         </div>
       </div>
-
-      {/* --- Add Button --- */}
       <button
-        className="w-8 h-8 rounded-full bg-emerald-500 text-white font-bold text-lg leading-none flex items-center justify-center flex-shrink-0"
-        aria-label={`Add ${item.name}`}
+        className="w-8 h-8 rounded-full text-white font-bold text-lg leading-none flex items-center justify-center flex-shrink-0 hover:opacity-90 transition shadow-sm"
+        style={{ backgroundColor: 'var(--color-accent-success)' }}
       >
         +
       </button>
@@ -44,57 +39,68 @@ function MenuItem({ item, onAdd }) {
   );
 }
 
-// --- Helper component for the current order list (Order Cart) ---
-// (No changes to OrderCart component)
+// --- Helper: Order Cart ---
 function OrderCart({ orderItems, onRemove, onPlaceOrder, orderTotal, tableNumber, setTableNumber }) {
   if (orderItems.length === 0) {
     return (
-      <div className="p-4 text-center text-slate-400 bg-slate-800 rounded-lg h-full flex items-center justify-center">
-        Tap items on the left to start a new order.
+      <div 
+        className="p-4 text-center text-gray-500 rounded-lg h-full flex items-center justify-center shadow-lg border-2 border-dashed border-gray-200"
+        style={{ backgroundColor: 'var(--color-bg-card)' }}
+      >
+        <p>Cart is empty.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800 rounded-lg shadow-xl flex flex-col h-full">
-      <div className="p-4 border-b border-slate-700">
-        <h3 className="text-xl font-bold text-white">Current Order</h3>
+    <div 
+        className="rounded-lg shadow-xl flex flex-col h-full overflow-hidden"
+        style={{ backgroundColor: 'var(--color-bg-card)' }}
+    >
+      <div className="p-3 border-b border-gray-300 bg-gray-50">
+        <h3 className="text-lg font-bold text-gray-900">Current Order</h3>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      {/* Scrollable Cart Items */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {orderItems.map((item) => (
-          <div key={item.itemId} className="flex justify-between items-center text-white">
+          <div key={item.itemId} className="flex justify-between items-center text-gray-900 text-sm">
             <div className="flex items-center gap-2">
-                <span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-red-500 bg-red-500/10 rounded-full cursor-pointer" onClick={() => onRemove(item.itemId)}>
+                <button 
+                    className="w-5 h-5 flex items-center justify-center text-xs font-bold text-red-600 bg-red-50 rounded-full hover:bg-red-100 border border-red-200" 
+                    onClick={() => onRemove(item.itemId)}
+                >
                     &times;
-                </span>
+                </button>
                 <span className="font-semibold">{item.quantity} × {item.name}</span>
             </div>
-            <span className="text-sm text-slate-300">${(item.price * item.quantity).toFixed(2)}</span>
+            <span className="text-gray-700 font-medium">${(item.price * item.quantity).toFixed(2)}</span>
           </div>
         ))}
       </div>
 
-      <div className="p-4 border-t border-slate-700">
-          <div className="mb-3">
-              <label htmlFor="table-number" className="block text-sm font-medium text-slate-300 mb-1">Table Number (Optional)</label>
+      {/* Fixed Bottom Section */}
+      <div className="p-3 border-t border-gray-300 bg-gray-50">
+          <div className="mb-2">
               <input
-                  id="table-number"
                   type="number"
-                  placeholder="e.g. 5"
+                  placeholder="Table No."
                   value={tableNumber}
                   onChange={(e) => setTableNumber(e.target.value)}
-                  className="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400"
+                  className="w-full p-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
           </div>
-          <div className="flex justify-between items-center text-lg font-bold mb-3">
-              <span className="text-slate-300">Total:</span>
-              <span className="text-amber-300">${orderTotal.toFixed(2)}</span>
+          <div className="flex justify-between items-center text-lg font-bold mb-2">
+              <span className="text-gray-900">Total:</span>
+              <span style={{ color: 'var(--color-accent-total)' }}>
+                ${orderTotal.toFixed(2)}
+              </span>
           </div>
           <button
               onClick={onPlaceOrder}
               disabled={orderItems.length === 0}
-              className="w-full py-3 rounded-lg bg-emerald-500 text-lg font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-400 transition"
+              className="w-full py-3 rounded-lg text-lg font-bold text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+              style={{ backgroundColor: 'var(--color-accent-success)' }}
           >
               Place Order
           </button>
@@ -106,77 +112,67 @@ function OrderCart({ orderItems, onRemove, onPlaceOrder, orderTotal, tableNumber
 // --- Main Waiter Page Component ---
 export default function WaiterPage() {
   const [mode, setMode] = useState("Take Order");
+  const [mobileTab, setMobileTab] = useState("menu"); // 'menu' or 'cart' for mobile view
 
-  // ----- Menu / taking orders -----
+  // ----- Data State -----
   const [activeCategory, setActiveCategory] = useState("");
   const [orderItems, setOrderItems] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
   const [menuError, setMenuError] = useState(null);
+  
   const [tableNumber, setTableNumber] = useState("");
   const [orderPlacementError, setOrderPlacementError] = useState("");
 
-  // ----- Serving orders -----
   const [readyOrders, setReadyOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState("");
 
-  // Load menu from backend
+  // --- Fetch Logic ---
   const fetchMenu = async () => {
-    // ... (Your existing fetchMenu logic)
     try {
         setLoadingMenu(true);
-        setMenuError(null);
         const res = await fetch(`${API_BASE}/menu`);
         if (!res.ok) throw new Error("Failed to load menu");
         const data = await res.json();
         setMenuItems(data);
     } catch (err) {
-        console.error(err);
         setMenuError("Failed to load menu");
     } finally {
         setLoadingMenu(false);
     }
   };
 
-  // Load ready orders
   const fetchReadyOrders = async () => {
-    // ... (Your existing fetchReadyOrders logic)
     setOrdersLoading(true);
     setOrdersError("");
     try {
         const res = await fetch(`${API_BASE}/orders?status=READY`);
-        if (!res.ok) throw new Error("Failed to load ready orders");
+        if (!res.ok) throw new Error("Failed");
         const data = await res.json();
         setReadyOrders(data);
     } catch (err) {
-        console.error(err);
-        setOrdersError(err.message || "Error loading ready orders");
+        setOrdersError(err.message);
     } finally {
         setOrdersLoading(false);
     }
   };
 
-
-  useEffect(() => {
-    fetchMenu();
-  }, []);
+  useEffect(() => { fetchMenu(); }, []);
 
   useEffect(() => {
     if (mode === "Serve Orders") {
       fetchReadyOrders();
+      const interval = setInterval(fetchReadyOrders, 10000);
+      return () => clearInterval(interval);
     }
   }, [mode]);
 
-
-  // Helper Maps & Computed Values
-  const categories = useMemo(
-    () => [...new Set(menuItems.map((i) => i.category))],
-    [menuItems]
-  );
+  // --- Computations ---
+  const categories = useMemo(() => ["All", ...new Set(menuItems.map((i) => i.category))], [menuItems]);
   
   const filteredMenu = useMemo(() => {
-    if (!activeCategory) return menuItems;
+    if (!activeCategory || activeCategory === "All") return menuItems;
     return menuItems.filter((i) => i.category === activeCategory);
   }, [menuItems, activeCategory]);
 
@@ -184,53 +180,36 @@ export default function WaiterPage() {
     return orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   }, [orderItems]);
 
-  // --- Order taking handlers ---
-  const handleAddItem = (itemToAdd) => {
-    setOrderPlacementError("");
+  // --- Handlers ---
+  const handleAddItem = (item) => {
     setOrderItems((prev) => {
-      const existingItem = prev.find((i) => i.itemId === itemToAdd.id);
-      if (existingItem) {
-        return prev.map((i) =>
-          i.itemId === itemToAdd.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      } else {
-        return [
-          ...prev,
-          {
-            itemId: itemToAdd.id,
-            name: itemToAdd.name,
-            price: Number(itemToAdd.price),
-            quantity: 1,
-          },
-        ];
+      const exists = prev.find((i) => i.itemId === item.id);
+      if (exists) {
+        return prev.map((i) => i.itemId === item.id ? { ...i, quantity: i.quantity + 1 } : i);
       }
+      return [...prev, { itemId: item.id, name: item.name, price: Number(item.price), quantity: 1 }];
     });
   };
 
-  const handleRemoveItem = (itemId) => {
-    setOrderPlacementError("");
+  const handleRemoveItem = (id) => {
     setOrderItems((prev) => {
-      const existingItem = prev.find((i) => i.itemId === itemId);
-      if (existingItem.quantity > 1) {
-        return prev.map((i) =>
-          i.itemId === itemId ? { ...i, quantity: i.quantity - 1 } : i
-        );
-      } else {
-        return prev.filter((i) => i.itemId !== itemId);
+      const exists = prev.find((i) => i.itemId === id);
+      if (exists.quantity > 1) {
+        return prev.map((i) => i.itemId === id ? { ...i, quantity: i.quantity - 1 } : i);
       }
+      return prev.filter((i) => i.itemId !== id);
     });
   };
 
   const handlePlaceOrder = async () => {
-    // Basic calculation for subtotal/tax/total
     const subtotal = orderTotal;
-    const taxRate = 0.05; // Example 5% tax
-    const tax = subtotal * taxRate;
+    const tax = subtotal * 0.05;
     const total = subtotal + tax;
 
+    // --- FIX: Using 'orderItems' here to match Backend Controller ---
     const body = {
       tableNumber: tableNumber ? Number(tableNumber) : null,
-      orders: orderItems.map((i) => ({ itemId: i.itemId, quantity: i.quantity })),
+      orderItems: orderItems.map((i) => ({ itemId: i.itemId, quantity: i.quantity })), 
       subtotal: subtotal.toFixed(2),
       tax: tax.toFixed(2),
       total: total.toFixed(2),
@@ -243,172 +222,158 @@ export default function WaiterPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
-
         const result = await res.json();
-        
-        if (!res.ok) {
-            // Check for specific error message from the backend (e.g., table already active)
-            throw new Error(result.error || "Failed to place order.");
-        }
+        if (!res.ok) throw new Error(result.error || "Failed");
 
-        // Success: Clear the current order
         setOrderItems([]);
         setTableNumber("");
-        alert(`Order #${result.order.id} placed successfully!`);
-
+        alert(`Order #${result.order.id} placed!`);
     } catch (err) {
-        console.error("Order Placement Error:", err);
-        setOrderPlacementError(err.message || "Failed to place order due to server error.");
+        setOrderPlacementError(err.message || "Error placing order");
     }
   };
 
-  // --- Serving orders handlers ---
   const markServed = async (orderId) => {
-    // ... (Your existing markServed logic)
     try {
-        const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+        await fetch(`${API_BASE}/orders/${orderId}/status`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ status: "SERVED" }),
         });
-        if (!res.ok) throw new Error("Failed to mark order as served");
-        
-        // Remove from the list immediately upon success
         setReadyOrders(prev => prev.filter(o => o.id !== orderId));
     } catch (err) {
         console.error(err);
-        setOrdersError(err.message || "Error marking order served.");
     }
   };
 
-  // --- Main Render ---
+  // --- RENDER ---
   return (
-    <div className="p-4 bg-slate-900 min-h-screen text-white">
-      {/* Mode Selector (Top Bar) */}
-      <div className="flex bg-slate-800 p-1 rounded-lg mb-4 shadow-xl">
-        {MODES.map((m) => (
-          <button
-            key={m}
-            onClick={() => setMode(m)}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              mode === m ? "bg-emerald-500 text-white" : "text-slate-400 hover:bg-slate-700"
-            }`}
+    <div 
+        className="h-screen w-full flex flex-col text-gray-900 overflow-hidden"
+        style={{ backgroundColor: 'var(--color-bg-primary)' }}
+    >
+      {/* Top Bar: Mode Selector */}
+      <div className="p-2 shrink-0">
+          <div 
+            className="flex p-1 rounded-lg shadow-sm"
+            style={{ backgroundColor: 'var(--color-bg-card)' }}
           >
-            {m}
-          </button>
-        ))}
+            {MODES.map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${
+                  mode === m ? "text-white shadow" : "text-gray-500 hover:bg-gray-100"
+                }`}
+                style={mode === m ? { backgroundColor: 'var(--color-accent-utility)' } : {}}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
       </div>
 
-      {/* TAKE ORDER MODE */}
+      {/* --- TAKE ORDER MODE --- */}
       {mode === "Take Order" && (
-        <div className="flex flex-col md:flex-row gap-4 h-[calc(100vh-120px)]"> 
-          
-          {/* Menu Panel (Scrollable, takes up screen width on mobile) */}
-          <section className="flex-1 min-h-[50vh] md:min-h-full flex flex-col">
-            <h2 className="text-2xl font-bold mb-3 text-emerald-400">Menu Items</h2>
+        <div className="flex-1 flex flex-col overflow-hidden relative">
             
-            {/* Category Selector */}
-            <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
-                <button
-                    onClick={() => setActiveCategory("")}
-                    className={`px-3 py-1 text-sm rounded-full transition ${!activeCategory ? "bg-amber-500 text-black font-semibold" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}
+            {/* Mobile View Toggle (Menu vs Cart) - Visible only on small screens */}
+            <div className="md:hidden flex border-b border-gray-300 bg-white shrink-0">
+                <button 
+                    onClick={() => setMobileTab("menu")}
+                    className={`flex-1 py-3 text-sm font-bold text-center border-b-2 ${mobileTab === 'menu' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}
                 >
-                    All
+                    Menu
                 </button>
-                {categories.map((cat) => (
-                    <button
-                        key={cat}
-                        onClick={() => setActiveCategory(cat)}
-                        className={`px-3 py-1 text-sm rounded-full transition ${activeCategory === cat ? "bg-amber-500 text-black font-semibold" : "bg-slate-700 text-slate-300 hover:bg-slate-600"}`}
-                    >
-                        {cat}
-                    </button>
-                ))}
+                <button 
+                    onClick={() => setMobileTab("cart")}
+                    className={`flex-1 py-3 text-sm font-bold text-center border-b-2 ${mobileTab === 'cart' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}
+                >
+                    Cart ({orderItems.reduce((a, b) => a + b.quantity, 0)})
+                </button>
             </div>
 
-            {/* Menu List */}
-            <div className="flex-1 overflow-y-auto space-y-3 pb-4">
-              {loadingMenu && <p className="text-slate-400">Loading menu...</p>}
-              {menuError && <p className="text-red-500">Error: {menuError}</p>}
-              {!loadingMenu && filteredMenu.length === 0 && <p className="text-slate-400">No items found in this category.</p>}
-              
-              {filteredMenu.map((item) => (
-                <MenuItem key={item.id} item={item} onAdd={handleAddItem} />
-              ))}
+            {/* Content Container */}
+            <div className="flex-1 flex overflow-hidden p-2 gap-3">
+                
+                {/* 1. Menu Section (Hidden on mobile if tab is 'cart') */}
+                <section className={`flex-1 flex-col overflow-hidden ${mobileTab === 'cart' ? 'hidden md:flex' : 'flex'}`}>
+                    
+                    {/* Category Pills */}
+                    <div className="flex gap-2 mb-2 overflow-x-auto pb-1 shrink-0 scrollbar-hide">
+                        {categories.map((cat) => (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`px-3 py-1.5 text-xs font-bold rounded-full whitespace-nowrap transition shadow-sm ${
+                                    (activeCategory === cat || (cat === "All" && !activeCategory))
+                                    ? "text-white" 
+                                    : "bg-white text-gray-600 border border-gray-200"
+                                }`}
+                                style={(activeCategory === cat || (cat === "All" && !activeCategory)) ? { backgroundColor: 'var(--color-accent-utility)' } : {}}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Menu Grid */}
+                    <div className="flex-1 overflow-y-auto pb-10">
+                        {loadingMenu && <div className="text-center p-4">Loading...</div>}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {filteredMenu.map((item) => (
+                                <MenuItem key={item.id} item={item} onAdd={handleAddItem} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* 2. Cart Section (Hidden on mobile if tab is 'menu') */}
+                <section className={`w-full md:w-80 flex-col ${mobileTab === 'menu' ? 'hidden md:flex' : 'flex'}`}>
+                    <OrderCart 
+                        orderItems={orderItems}
+                        onRemove={handleRemoveItem}
+                        onPlaceOrder={handlePlaceOrder}
+                        orderTotal={orderTotal}
+                        tableNumber={tableNumber}
+                        setTableNumber={setTableNumber}
+                    />
+                    {orderPlacementError && <p className="text-red-600 text-xs mt-2 text-center bg-red-50 p-1 rounded">{orderPlacementError}</p>}
+                </section>
             </div>
-          </section>
-
-          {/* Order Cart (Fixed Height on Mobile, Scrollable on Desktop) */}
-          <section className="w-full md:w-80 min-h-[50vh] md:min-h-full">
-            <OrderCart 
-                orderItems={orderItems} 
-                onRemove={handleRemoveItem} 
-                onPlaceOrder={handlePlaceOrder} 
-                orderTotal={orderTotal}
-                tableNumber={tableNumber}
-                setTableNumber={setTableNumber}
-            />
-            {orderPlacementError && <p className="text-red-500 text-sm mt-2">{orderPlacementError}</p>}
-          </section>
-
         </div>
       )}
 
-      {/* SERVE ORDERS MODE */}
+      {/* --- SERVE ORDERS MODE --- */}
       {mode === "Serve Orders" && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold mb-4 text-emerald-400">Ready Orders</h2>
-
-          {ordersLoading && <p className="text-slate-400">Loading ready orders...</p>}
-          {ordersError && <p className="text-red-500">Error: {ordersError}</p>}
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {readyOrders.length === 0 && !ordersLoading && (
-              <p className="text-slate-400 col-span-full">No orders are currently ready to be served.</p>
-            )}
-
-            {readyOrders.map((order) => {
-              // ... (Calculate orderTotal and menuMap as you would normally)
-              const orderTotal = order.items.reduce((acc, item) => acc + (item.menu?.price || 0) * item.quantity, 0);
-
-              return (
-                <div key={order.id} className="bg-slate-800 rounded-xl p-4 flex flex-col gap-2 shadow-xl">
-                  <div className="flex justify-between items-center mb-1">
-                    <h3 className="font-semibold text-lg">Order #{order.id}</h3>
-                    <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300">
-                      {order.status}
-                    </span>
-                  </div>
-                  {order.tableNumber && <p className="text-xs text-slate-400">Table: {order.tableNumber}</p>}
-                  
-                  {/* Order Items List */}
-                  <div className="mt-2 space-y-1 text-sm max-h-32 overflow-auto pr-1 border-y border-slate-700 py-2">
-                    {order.items?.map((item, idx) => {
-                      // Note: Assuming item.menu is populated with the menu item details
-                      return (
-                        <div key={idx} className="flex justify-between items-center">
-                          <span>{item.quantity} × {item.menu?.name || `Item ${item.menuId}`}</span>
-                          <span className="text-slate-300">${((item.menu?.price || 0) * item.quantity).toFixed(2)}</span>
+        <div className="flex-1 overflow-y-auto p-4">
+             <h2 className="text-xl font-bold mb-4 text-gray-900">Ready to Serve</h2>
+             {ordersLoading && <p>Loading...</p>}
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {readyOrders.map((order) => (
+                    <div key={order.id} className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex flex-col gap-2">
+                        <div className="flex justify-between font-bold text-gray-800">
+                            <span>#{order.id}</span>
+                            <span className="text-green-600 text-sm bg-green-50 px-2 py-1 rounded-full">{order.status}</span>
                         </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="border-t border-slate-700 mt-3 pt-2 text-sm flex justify-between text-slate-300">
-                    <span>Total:</span>
-                    <span className="font-semibold text-amber-300">${orderTotal.toFixed(2)}</span>
-                  </div>
-                  
-                  <button 
-                    onClick={() => markServed(order.id)} 
-                    className="mt-3 w-full py-2 rounded-lg bg-emerald-500 text-sm font-semibold hover:bg-emerald-400 transition"
-                  >
-                    Mark as Served
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                        {order.tableNumber && <div className="text-xs text-gray-500">Table: {order.tableNumber}</div>}
+                        <div className="text-sm text-gray-600 border-t border-b py-2 my-1 max-h-24 overflow-y-auto">
+                            {order.items?.map((i, idx) => (
+                                <div key={idx} className="flex justify-between">
+                                    <span>{i.quantity} x {i.menu?.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <button 
+                            onClick={() => markServed(order.id)}
+                            className="w-full py-2 rounded-lg text-white font-bold text-sm mt-auto"
+                            style={{ backgroundColor: 'var(--color-accent-success)' }}
+                        >
+                            Mark Served
+                        </button>
+                    </div>
+                ))}
+             </div>
         </div>
       )}
     </div>

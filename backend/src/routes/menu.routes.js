@@ -1,0 +1,18 @@
+import express from "express";
+import { 
+    getMenu, 
+    createMenuItem, 
+    updateMenuItem, 
+    deleteMenuItem 
+// --- FIX HERE: Use ../ to go up from routes/ to src/, then into controllers/ ---
+} from "../controllers/menu.controller.js"; 
+// -----------------------------------------------------------------------------
+
+const router = express.Router();
+
+router.get("/", getMenu);
+router.post("/", createMenuItem);
+router.put("/:id", updateMenuItem);
+router.delete("/:id", deleteMenuItem);
+
+export default router;

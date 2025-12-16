@@ -53,7 +53,6 @@ export default function CashierPage() {
   useEffect(() => {
     fetchServedOrders();
     fetchMenu();
-    // No polling interval here as the list is only updated when served
   }, []);
 
   const menuMap = useMemo(() => {
@@ -133,58 +132,63 @@ export default function CashierPage() {
   };
 
   return (
-    // FIX: Removed w-screen/h-full and used calc() to reliably fill remaining space
-    // from the parent (MainPage.jsx) and prevent accidental overflow.
-    <div className="min-h-[calc(100vh-4rem)] w-full bg-slate-900 text-white p-2 sm:p-4 flex flex-col md:flex-row gap-4">
+    // Reverting to use the CSS variable for the main page BG
+    <div 
+      className="min-h-[calc(100vh-4rem)] w-full p-2 sm:p-4 flex flex-col md:flex-row gap-4 text-gray-900"
+      style={{ backgroundColor: 'var(--color-bg-primary)' }} 
+    >
     
-      {/* Left: List of SERVED orders - Made it first for desktop view, but stacked on mobile */}
-      <section className="w-full md:w-2/5 bg-slate-800 rounded-xl p-3 sm:p-4 flex flex-col">
+      {/* Left: List of SERVED orders */}
+      <section 
+        className="w-full md:w-2/5 rounded-xl p-3 sm:p-4 flex flex-col shadow-lg"
+        style={{ backgroundColor: 'var(--color-bg-card)' }}
+      >
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-2">
           <div>
             <h1 className="text-base md:text-lg font-semibold">SERVED Orders</h1>
-            <p className="text-[10px] sm:text-xs text-slate-400">
+            <p className="text-[10px] sm:text-xs text-gray-500">
               Select an order to process payment.
             </p>
           </div>
+          {/* Reverting to use the CSS variable for the Utility button */}
           <button
             onClick={fetchServedOrders}
-            className="px-3 py-1 rounded-lg bg-sky-500 text-xs font-semibold hover:bg-sky-400 transition"
+            className="px-3 py-1 rounded-lg text-xs font-semibold hover:opacity-80 transition text-white"
+            style={{ backgroundColor: 'var(--color-accent-utility)' }}
           >
             Refresh
           </button>
         </header>
 
-        {ordersLoading && <p className="text-slate-300 text-sm">Loading orders...</p>}
-        {ordersError && <p className="text-red-400 text-sm mb-2">{ordersError}</p>}
+        {ordersLoading && <p className="text-gray-700 text-sm">Loading orders...</p>}
+        {ordersError && <p className="text-red-600 text-sm mb-2">{ordersError}</p>}
 
         {orders.length === 0 && !ordersLoading ? (
-          <p className="text-slate-400 text-sm">No SERVED orders waiting for payment.</p>
+          <p className="text-gray-500 text-sm">No SERVED orders waiting for payment.</p>
         ) : (
-          // FIX: Added flex-1 and h-full to the list container to manage vertical scrolling
           <div className="mt-2 space-y-2 overflow-y-auto flex-1 max-h-96 md:max-h-full">
             {orders.map((order) => (
               <button
                 key={order.id}
                 onClick={() => handleSelectOrder(order.id)}
-                className={`w-full text-left p-3 rounded-lg border transition-all ${
-                  selectedOrderId === order.id
-                    ? "border-emerald-400 bg-slate-900"
-                    : "border-slate-700 bg-slate-800 hover:bg-slate-700"
-                }`}
+                className={`w-full text-left p-3 rounded-lg border transition-all shadow-sm ${
+                    selectedOrderId === order.id
+                      ? "bg-blue-50 border-blue-400" 
+                      : "bg-white border-gray-200 hover:bg-gray-50" 
+                  }`}
               >
-                {/* FIX: Changed inner flex to stack on mobile (flex-col) and justify on desktop (sm:flex-row) */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                   <div>
                     <p className="text-sm font-semibold">Order #{order.id}</p>
                     {order.tableNumber && (
-                      <p className="text-[10px] sm:text-xs text-slate-400">Table: {order.tableNumber}</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500">Table: {order.tableNumber}</p>
                     )}
-                    <p className="text-[10px] sm:text-xs text-slate-500 mt-1">
+                    <p className="text-[10px] sm:text-xs text-gray-400 mt-1">
                       Items: {order.orders?.length ?? 0}
                     </p>
                   </div>
                   <div className="text-right text-sm mt-2 sm:mt-0">
-                    <p className="text-slate-300">
+                    <p className="text-gray-700">
                       Total: $
                       {(order.total ??
                         order.orders?.reduce((sum, item) => {
@@ -195,7 +199,10 @@ export default function CashierPage() {
                         0
                       ).toFixed(2)}
                     </p>
-                    <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
+                    <span 
+                      className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full"
+                      style={{ color: 'var(--color-accent-total)', backgroundColor: 'var(--color-bg-status-served)' }}
+                    >
                       {order.status}
                     </span>
                   </div>
@@ -207,14 +214,17 @@ export default function CashierPage() {
       </section>
 
       {/* Right: Payment details */}
-      <section className="w-full md:flex-1 bg-slate-800 rounded-xl p-3 sm:p-4 flex flex-col">
+      <section 
+        className="w-full md:flex-1 rounded-xl p-3 sm:p-4 flex flex-col shadow-lg"
+        style={{ backgroundColor: 'var(--color-bg-card)' }}
+      >
         <header className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-base md:text-lg font-semibold">Payment</h2>
-            <p className="text-[10px] sm:text-xs text-slate-400">Process payment for the selected order.</p>
+            <p className="text-[10px] sm:text-xs text-gray-500">Process payment for the selected order.</p>
           </div>
           {selectedOrder && (
-            <div className="text-[10px] sm:text-xs text-slate-400 text-right">
+            <div className="text-[10px] sm:text-xs text-gray-500 text-right">
               <p>Order #{selectedOrder.id}</p>
               {selectedOrder.tableNumber && <p>Table {selectedOrder.tableNumber}</p>}
             </div>
@@ -222,16 +232,15 @@ export default function CashierPage() {
         </header>
 
         {!selectedOrder ? (
-          <p className="text-slate-400 text-sm">Select an order from the left to start payment.</p>
+          <p className="text-gray-500 text-sm">Select an order from the left to start payment.</p>
         ) : (
           <>
             {/* Items list container */}
-            {/* FIX: Changed h-72 to h-full for better use of vertical space in the flex container */}
-            <div className="flex-1 overflow-y-auto mb-4 border border-slate-700 rounded-lg p-3">
+            <div className="flex-1 overflow-y-auto mb-4 border border-gray-300 rounded-lg p-3">
               <h3 className="text-sm font-semibold mb-2">Items</h3>
               
-              {menuLoading && <p className="text-slate-400 text-xs">Loading menu...</p>}
-              {menuError && <p className="text-red-400 text-xs mb-2">{menuError}</p>}
+              {menuLoading && <p className="text-gray-500 text-xs">Loading menu...</p>}
+              {menuError && <p className="text-red-600 text-xs mb-2">{menuError}</p>}
 
               <div className="space-y-1 text-sm">
                 {selectedOrder.orders?.map((item, idx) => {
@@ -243,24 +252,29 @@ export default function CashierPage() {
                   return (
                     <div key={idx} className="flex justify-between items-center">
                       <span>{item.quantity} × {name}</span>
-                      <span className="text-slate-300">${lineTotal.toFixed(2)}</span>
+                      <span className="text-gray-700">${lineTotal.toFixed(2)}</span>
                     </div>
                   );
                 })}
               </div>
 
-              <div className="border-t border-slate-700 mt-3 pt-2 text-sm space-y-1">
-                <div className="flex justify-between text-slate-300">
+              {/* Total Summary */}
+              <div className="border-t border-gray-300 mt-3 pt-2 text-sm space-y-1">
+                <div className="flex justify-between text-gray-600">
                   <span>Subtotal:</span>
                   <span>${(selectedOrder.subtotal ?? totalDue / 1.03).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-gray-500">
                   <span>Tax (3%):</span>
                   <span>${(
                     selectedOrder.tax ?? selectedOrder.subtotal * 0.03 ?? totalDue - totalDue / 1.03
                   ).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-lg font-bold text-emerald-300 mt-2">
+                {/* Reverting to use the CSS variable for the Total Due color */}
+                <div 
+                  className="flex justify-between text-lg font-bold mt-2"
+                  style={{ color: 'var(--color-accent-total)' }}
+                >
                   <span>Total Due:</span>
                   <span>${totalDue.toFixed(2)}</span>
                 </div>
@@ -268,42 +282,47 @@ export default function CashierPage() {
             </div>
 
             {/* Cash input */}
-            <div className="border-t border-slate-700 pt-4 flex flex-col gap-3">
-              {/* FIX: Ensure label/input stack properly on small screens */}
+            <div className="border-t border-gray-300 pt-4 flex flex-col gap-3">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <label className="text-sm text-slate-300 w-full sm:w-32">Cash given</label>
+                <label className="text-sm text-gray-600 w-full sm:w-32">Cash given</label>
                 <input
                   type="number"
                   step="0.01"
-                  className="w-full sm:w-auto px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:ring focus:ring-emerald-500"
+                  className="w-full sm:w-auto px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
                   value={cashGiven}
                   onChange={(e) => setCashGiven(e.target.value)}
                   placeholder="e.g. 500"
                 />
               </div>
 
-              {/* FIX: Ensure label/value stack properly on small screens */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <span className="text-sm text-slate-300 w-full sm:w-32">Change</span>
-                <span className="text-lg font-semibold text-emerald-300">
+                <span className="text-sm text-gray-600 w-full sm:w-32">Change</span>
+                {/* Reverting to use the CSS variable for the Change color */}
+                <span 
+                  className="text-lg font-semibold"
+                  style={{ color: 'var(--color-accent-success)' }}
+                >
                   ${isNaN(change) ? "0.00" : change.toFixed(2)}
                 </span>
               </div>
 
               <div className="mt-2 flex flex-col sm:flex-row gap-2">
+                {/* Reverting to use the CSS variable for the Confirm Payment button */}
                 <button
                   onClick={handleConfirmPayment}
                   disabled={totalDue <= 0 || numericCash < totalDue}
-                  className="w-full sm:flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-400 transition"
+                  className="w-full sm:flex-1 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition text-white"
+                  style={{ backgroundColor: 'var(--color-accent-success)' }}
                 >
                   Confirm Payment
                 </button>
+                {/* Using standard Tailwind class for Cancel button */}
                 <button
                   onClick={() => {
                     setSelectedOrderId(null);
                     setCashGiven("");
                   }}
-                  className="w-full sm:flex-1 px-4 py-2 rounded-lg bg-slate-600 text-sm font-semibold hover:bg-slate-500 transition"
+                  className="w-full sm:flex-1 px-4 py-2 rounded-lg bg-gray-300 text-sm font-semibold hover:bg-gray-400 transition text-gray-900"
                 >
                   Cancel
                 </button>

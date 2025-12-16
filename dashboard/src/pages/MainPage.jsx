@@ -1,15 +1,15 @@
 import { Outlet } from "react-router-dom";
-import NavBar from "../components/Navbar.jsx";
+import Navbar from "../components/Navbar"; // Adjust path if Navbar is in a different location
 
 export default function MainPage() {
   return (
-    <div className="min-h-screen w-screen flex flex-col bg-slate-900">
-      <NavBar />
-
-      {/* flex-1 makes this div take up all remaining vertical space */}
-      <div className="flex-1 overflow-y-auto">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-bg-primary)' }}>
+      
+      <Navbar />
+      
+      <main className="w-full mx-auto">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 }

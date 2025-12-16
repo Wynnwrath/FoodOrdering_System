@@ -153,31 +153,38 @@ export default function ManagerPage() {
   };
 
   return (
-    <div className="h-full w-full bg-slate-900 text-white p-4 flex flex-col gap-6">
+    <div 
+      className="h-full w-full p-4 flex flex-col gap-6 text-gray-900"
+      style={{ backgroundColor: 'var(--color-bg-primary)' }}
+    >
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
           <h1 className="text-2xl font-bold">Manager – Menu Management</h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-gray-500">
             Add, edit, or remove items from the menu.
           </p>
         </div>
         <button
           onClick={fetchMenu}
-          className="px-4 py-2 rounded-lg bg-sky-500 text-sm font-semibold hover:bg-sky-400 transition"
+          className="px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition text-white"
+          style={{ backgroundColor: 'var(--color-accent-utility)' }}
         >
           Refresh Menu
         </button>
       </header>
 
       {/* Form */}
-      <section className="bg-slate-800 rounded-xl p-4 flex flex-col lg:flex-row lg:items-end gap-3">
+      <section 
+        className="rounded-xl p-4 flex flex-col lg:flex-row lg:items-end gap-3 shadow-lg"
+        style={{ backgroundColor: 'var(--color-bg-card)' }}
+      >
         {/* Name */}
         <div className="flex-1">
-          <label className="block text-xs text-slate-400 mb-1">Name</label>
+          <label className="block text-xs text-gray-600 mb-1">Name</label>
           <input
             type="text"
-            className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:ring focus:ring-sky-500"
+            className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Bacon Burger"
@@ -186,11 +193,11 @@ export default function ManagerPage() {
 
         {/* Price */}
         <div className="flex-1">
-          <label className="block text-xs text-slate-400 mb-1">Price</label>
+          <label className="block text-xs text-gray-600 mb-1">Price</label>
           <input
             type="number"
             step="0.01"
-            className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:ring focus:ring-sky-500"
+            className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="e.g. 9.99"
@@ -199,9 +206,9 @@ export default function ManagerPage() {
 
         {/* Category */}
         <div className="flex-1">
-          <label className="block text-xs text-slate-400 mb-1">Category</label>
+          <label className="block text-xs text-gray-600 mb-1">Category</label>
           <select
-            className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:ring focus:ring-sky-500"
+            className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
             value={category}
             onChange={(e) => {
               const value = e.target.value;
@@ -220,7 +227,7 @@ export default function ManagerPage() {
           {category === CUSTOM_VALUE && (
             <input
               type="text"
-              className="mt-2 w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:ring focus:ring-sky-500"
+              className="mt-2 w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
               placeholder="Enter new category"
               value={customCategory}
               onChange={(e) => setCustomCategory(e.target.value)}
@@ -230,21 +237,22 @@ export default function ManagerPage() {
 
         {/* Image */}
         <div className="flex-1">
-          <label className="block text-xs text-slate-400 mb-1">Image</label>
-          <input type="file" accept="image/*" className="w-full text-xs text-slate-300" onChange={handleImageChange} />
+          <label className="block text-xs text-gray-600 mb-1">Image</label>
+          <input type="file" accept="image/*" className="w-full text-xs text-gray-500" onChange={handleImageChange} />
           {(imagePreview || imageUrl) && (
-            <div className="mt-2 w-full h-16 rounded-lg overflow-hidden bg-slate-900 border border-slate-700 flex items-center justify-center">
+            <div className="mt-2 w-full h-16 rounded-lg overflow-hidden bg-gray-50 border border-gray-300 flex items-center justify-center">
               <img src={imagePreview || imageUrl} alt="Preview" className="w-full h-full object-cover" />
             </div>
           )}
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 min-w-[200px]">
           <button
             type="button"
             onClick={handleSaveItem}
-            className="flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-sm font-semibold hover:bg-emerald-400 transition"
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition text-white"
+            style={{ backgroundColor: 'var(--color-accent-success)' }}
           >
             {editingId === null ? "Add Item" : "Save Changes"}
           </button>
@@ -252,7 +260,7 @@ export default function ManagerPage() {
             <button
               type="button"
               onClick={handleCancelEdit}
-              className="px-4 py-2 rounded-lg bg-slate-600 text-sm font-semibold hover:bg-slate-500 transition"
+              className="px-4 py-2 rounded-lg bg-gray-300 text-sm font-semibold hover:bg-gray-400 transition text-gray-900"
             >
               Cancel
             </button>
@@ -262,24 +270,33 @@ export default function ManagerPage() {
 
       {/* Menu Items */}
       <section className="flex-1 overflow-auto">
-        {loading && <p className="text-slate-300 text-sm">Loading menu...</p>}
-        {error && <p className="text-red-400 text-sm mb-2">{error}</p>}
+        {loading && <p className="text-gray-600 text-sm">Loading menu...</p>}
+        {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
         {!loading && menu.length === 0 ? (
-          <p className="text-slate-400 text-sm">No menu items yet.</p>
+          <p className="text-gray-500 text-sm">No menu items yet.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {menu.map((item) => (
-              <div key={item.id} className="bg-slate-800 rounded-xl p-4 flex flex-col gap-2">
-                <div className="w-full h-32 rounded-lg overflow-hidden bg-slate-700 flex items-center justify-center">
+              <div 
+                key={item.id} 
+                className="rounded-xl p-4 flex flex-col gap-2 shadow-lg hover:shadow-xl transition"
+                style={{ backgroundColor: 'var(--color-bg-card)' }}
+              >
+                <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
                   {item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-[10px] text-slate-500">No image</span>
+                    <span className="text-[10px] text-gray-500">No image</span>
                   )}
                 </div>
                 <p className="font-semibold text-sm">{item.name}</p>
-                <p className="text-xs text-slate-300">{item.category}</p>
-                <p className="text-sm text-amber-300">${Number(item.price).toFixed(2)}</p>
+                <p className="text-xs text-gray-600">{item.category}</p>
+                <p 
+                  className="text-sm font-bold"
+                  style={{ color: 'var(--color-accent-total)' }}
+                >
+                  ${Number(item.price).toFixed(2)}
+                </p>
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => {
@@ -292,13 +309,13 @@ export default function ManagerPage() {
                       setImageFile(null);
                       setImagePreview("");
                     }}
-                    className="flex-1 px-2 py-1 rounded-lg bg-slate-600 text-xs font-semibold hover:bg-slate-500 transition"
+                    className="flex-1 px-2 py-1 rounded-lg bg-gray-300 text-xs font-semibold hover:bg-gray-400 transition text-gray-900"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDeleteItem(item.id)}
-                    className="flex-1 px-2 py-1 rounded-lg bg-red-500 text-xs font-semibold hover:bg-red-400 transition"
+                    className="flex-1 px-2 py-1 rounded-lg bg-red-500 text-xs font-semibold hover:bg-red-400 transition text-white"
                   >
                     Delete
                   </button>
