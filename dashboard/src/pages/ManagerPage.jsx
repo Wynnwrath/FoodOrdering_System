@@ -3,7 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 const API_BASE = "http://localhost:3000";
 const CUSTOM_VALUE = "__custom";
 
+const MODES = ["Menu Editor", "Activity Log"];
+
 export default function ManagerPage() {
+  const [mode, setMode] = useState("Menu Editor");
+
+  // ==============================
+  // 1. MENU EDITOR STATE & LOGIC
+  // ==============================
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -18,7 +25,13 @@ export default function ManagerPage() {
   const [imagePreview, setImagePreview] = useState("");
   const [imageUrl, setImageUrl] = useState("");
 
-  // Fetch menu items
+  // ==============================
+  // 2. HISTORY STATE & LOGIC
+  // ==============================
+  const [logs, setLogs] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // --- FETCHERS ---
   const fetchMenu = async () => {
     try {
       setLoading(true);
@@ -35,11 +48,23 @@ export default function ManagerPage() {
     }
   };
 
-  useEffect(() => {
-    fetchMenu();
-  }, []);
+  const fetchHistory = async () => {
+    setHistoryLoading(true);
+    fetch(`${API_BASE}/history`)
+      .then((res) => res.json())
+      .then((data) => setLogs(data))
+      .catch((err) => console.error(err))
+      .finally(() => setHistoryLoading(false));
+  };
 
-  // Categories (defaults + menu)
+  // Fetch data when switching modes
+  useEffect(() => {
+    if (mode === "Menu Editor") fetchMenu();
+    if (mode === "Activity Log") fetchHistory();
+  }, [mode]);
+
+
+  // --- MENU HELPERS ---
   const categories = useMemo(() => {
     const set = new Set(["Burgers", "Pizza", "Salads", "Drinks", "Desserts"]);
     menu.forEach((item) => {
@@ -48,7 +73,6 @@ export default function ManagerPage() {
     return Array.from(set);
   }, [menu]);
 
-  // Convert image file to base64
   const fileToDataUrl = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -57,7 +81,6 @@ export default function ManagerPage() {
       reader.readAsDataURL(file);
     });
 
-  // Save item (create/update)
   const handleSaveItem = async (e) => {
     e.preventDefault();
     if (!name.trim() || !price) {
@@ -152,179 +175,264 @@ export default function ManagerPage() {
     setImagePreview(URL.createObjectURL(file));
   };
 
+
   return (
     <div 
-      className="h-full w-full p-4 flex flex-col gap-6 text-gray-900"
+      className="h-full w-full p-4 flex flex-col gap-4 text-gray-900 overflow-hidden"
       style={{ backgroundColor: 'var(--color-bg-primary)' }}
     >
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+      {/* --- TOP BAR: TITLE & MODE TOGGLE --- */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold">Manager – Menu Management</h1>
-          <p className="text-sm text-gray-500">
-            Add, edit, or remove items from the menu.
-          </p>
+           <h1 className="text-2xl font-bold">Manager Hub</h1>
+           <p className="text-sm text-gray-500">Manage menu items and view system history.</p>
         </div>
-        <button
-          onClick={fetchMenu}
-          className="px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition text-white"
-          style={{ backgroundColor: 'var(--color-accent-utility)' }}
+        
+        {/* Mode Selector */}
+        <div 
+            className="flex p-1 rounded-lg shadow-sm w-full sm:w-auto"
+            style={{ backgroundColor: 'var(--color-bg-card)' }}
         >
-          Refresh Menu
-        </button>
-      </header>
-
-      {/* Form */}
-      <section 
-        className="rounded-xl p-4 flex flex-col lg:flex-row lg:items-end gap-3 shadow-lg"
-        style={{ backgroundColor: 'var(--color-bg-card)' }}
-      >
-        {/* Name */}
-        <div className="flex-1">
-          <label className="block text-xs text-gray-600 mb-1">Name</label>
-          <input
-            type="text"
-            className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Bacon Burger"
-          />
-        </div>
-
-        {/* Price */}
-        <div className="flex-1">
-          <label className="block text-xs text-gray-600 mb-1">Price</label>
-          <input
-            type="number"
-            step="0.01"
-            className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="e.g. 9.99"
-          />
-        </div>
-
-        {/* Category */}
-        <div className="flex-1">
-          <label className="block text-xs text-gray-600 mb-1">Category</label>
-          <select
-            className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
-            value={category}
-            onChange={(e) => {
-              const value = e.target.value;
-              setCategory(value);
-              if (value !== CUSTOM_VALUE) setCustomCategory("");
-            }}
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-            <option value={CUSTOM_VALUE}>+ Add new category…</option>
-          </select>
-
-          {category === CUSTOM_VALUE && (
-            <input
-              type="text"
-              className="mt-2 w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
-              placeholder="Enter new category"
-              value={customCategory}
-              onChange={(e) => setCustomCategory(e.target.value)}
-            />
-          )}
-        </div>
-
-        {/* Image */}
-        <div className="flex-1">
-          <label className="block text-xs text-gray-600 mb-1">Image</label>
-          <input type="file" accept="image/*" className="w-full text-xs text-gray-500" onChange={handleImageChange} />
-          {(imagePreview || imageUrl) && (
-            <div className="mt-2 w-full h-16 rounded-lg overflow-hidden bg-gray-50 border border-gray-300 flex items-center justify-center">
-              <img src={imagePreview || imageUrl} alt="Preview" className="w-full h-full object-cover" />
-            </div>
-          )}
-        </div>
-
-        {/* Buttons */}
-        <div className="flex gap-2 min-w-[200px]">
-          <button
-            type="button"
-            onClick={handleSaveItem}
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition text-white"
-            style={{ backgroundColor: 'var(--color-accent-success)' }}
-          >
-            {editingId === null ? "Add Item" : "Save Changes"}
-          </button>
-          {editingId !== null && (
+            {MODES.map((m) => (
             <button
-              type="button"
-              onClick={handleCancelEdit}
-              className="px-4 py-2 rounded-lg bg-gray-300 text-sm font-semibold hover:bg-gray-400 transition text-gray-900"
+                key={m}
+                onClick={() => setMode(m)}
+                className={`flex-1 sm:flex-none px-6 py-2 rounded-md text-sm font-bold transition-all ${
+                mode === m ? "text-white shadow" : "text-gray-500 hover:bg-gray-100"
+                }`}
+                style={mode === m ? { backgroundColor: 'var(--color-accent-utility)' } : {}}
             >
-              Cancel
+                {m}
             </button>
-          )}
-        </div>
-      </section>
-
-      {/* Menu Items */}
-      <section className="flex-1 overflow-auto">
-        {loading && <p className="text-gray-600 text-sm">Loading menu...</p>}
-        {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-        {!loading && menu.length === 0 ? (
-          <p className="text-gray-500 text-sm">No menu items yet.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {menu.map((item) => (
-              <div 
-                key={item.id} 
-                className="rounded-xl p-4 flex flex-col gap-2 shadow-lg hover:shadow-xl transition"
-                style={{ backgroundColor: 'var(--color-bg-card)' }}
-              >
-                <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
-                  {item.imageUrl ? (
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-[10px] text-gray-500">No image</span>
-                  )}
-                </div>
-                <p className="font-semibold text-sm">{item.name}</p>
-                <p className="text-xs text-gray-600">{item.category}</p>
-                <p 
-                  className="text-sm font-bold"
-                  style={{ color: 'var(--color-accent-total)' }}
-                >
-                  ${Number(item.price).toFixed(2)}
-                </p>
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={() => {
-                      setEditingId(item.id);
-                      setName(item.name);
-                      setPrice(item.price);
-                      setCategory(categories.includes(item.category) ? item.category : CUSTOM_VALUE);
-                      setCustomCategory(categories.includes(item.category) ? "" : item.category);
-                      setImageUrl(item.imageUrl || "");
-                      setImageFile(null);
-                      setImagePreview("");
-                    }}
-                    className="flex-1 px-2 py-1 rounded-lg bg-gray-300 text-xs font-semibold hover:bg-gray-400 transition text-gray-900"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteItem(item.id)}
-                    className="flex-1 px-2 py-1 rounded-lg bg-red-500 text-xs font-semibold hover:bg-red-400 transition text-white"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
             ))}
-          </div>
-        )}
-      </section>
+        </div>
+      </div>
+
+      {/* ========================================= */}
+      {/* MODE 1: MENU EDITOR */}
+      {/* ========================================= */}
+      {mode === "Menu Editor" && (
+        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+            {/* Form Section */}
+            <section 
+                className="rounded-xl p-4 flex flex-col lg:flex-row lg:items-end gap-3 shadow-lg shrink-0"
+                style={{ backgroundColor: 'var(--color-bg-card)' }}
+            >
+                {/* Name */}
+                <div className="flex-1">
+                <label className="block text-xs text-gray-600 mb-1">Name</label>
+                <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Bacon Burger"
+                />
+                </div>
+
+                {/* Price */}
+                <div className="flex-1">
+                <label className="block text-xs text-gray-600 mb-1">Price</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="e.g. 9.99"
+                />
+                </div>
+
+                {/* Category */}
+                <div className="flex-1">
+                <label className="block text-xs text-gray-600 mb-1">Category</label>
+                <select
+                    className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
+                    value={category}
+                    onChange={(e) => {
+                    const value = e.target.value;
+                    setCategory(value);
+                    if (value !== CUSTOM_VALUE) setCustomCategory("");
+                    }}
+                >
+                    {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                        {cat}
+                    </option>
+                    ))}
+                    <option value={CUSTOM_VALUE}>+ Add new category…</option>
+                </select>
+
+                {category === CUSTOM_VALUE && (
+                    <input
+                    type="text"
+                    className="mt-2 w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
+                    placeholder="Enter new category"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    />
+                )}
+                </div>
+
+               {/* Image Input */}
+                <div className="flex-1">
+                    <label className="block text-xs text-gray-600 mb-1">Image</label>
+                    
+                    {/* Add accept="image/*" to hint Android to show Camera/Gallery */}
+                    <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="w-full text-xs text-gray-500" 
+                        onChange={handleImageChange} 
+                    />
+
+                    {(imagePreview || imageUrl) && (
+                        <div className="mt-2 w-full h-16 rounded-lg overflow-hidden bg-gray-50 border border-gray-300 flex items-center justify-center">
+                            <img src={imagePreview || imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                    )}
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-2 min-w-[200px]">
+                <button
+                    type="button"
+                    onClick={handleSaveItem}
+                    className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition text-white"
+                    style={{ backgroundColor: 'var(--color-accent-success)' }}
+                >
+                    {editingId === null ? "Add Item" : "Save Changes"}
+                </button>
+                {editingId !== null && (
+                    <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="px-4 py-2 rounded-lg bg-gray-300 text-sm font-semibold hover:bg-gray-400 transition text-gray-900"
+                    >
+                    Cancel
+                    </button>
+                )}
+                </div>
+            </section>
+
+            {/* Menu Items Grid */}
+            <section className="flex-1 overflow-y-auto">
+                {loading && <p className="text-gray-600 text-sm">Loading menu...</p>}
+                {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+                {!loading && menu.length === 0 ? (
+                <p className="text-gray-500 text-sm">No menu items yet.</p>
+                ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-10">
+                    {menu.map((item) => (
+                    <div 
+                        key={item.id} 
+                        className="rounded-xl p-4 flex flex-col gap-2 shadow-lg hover:shadow-xl transition border border-transparent hover:border-gray-200"
+                        style={{ backgroundColor: 'var(--color-bg-card)' }}
+                    >
+                        <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
+                        {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-[10px] text-gray-500">No image</span>
+                        )}
+                        </div>
+                        <p className="font-semibold text-sm truncate">{item.name}</p>
+                        <p className="text-xs text-gray-600">{item.category}</p>
+                        <p 
+                        className="text-sm font-bold"
+                        style={{ color: 'var(--color-accent-total)' }}
+                        >
+                        ${Number(item.price).toFixed(2)}
+                        </p>
+                        <div className="flex gap-2 mt-2">
+                        <button
+                            onClick={() => {
+                            setEditingId(item.id);
+                            setName(item.name);
+                            setPrice(item.price);
+                            setCategory(categories.includes(item.category) ? item.category : CUSTOM_VALUE);
+                            setCustomCategory(categories.includes(item.category) ? "" : item.category);
+                            setImageUrl(item.imageUrl || "");
+                            setImageFile(null);
+                            setImagePreview("");
+                            }}
+                            className="flex-1 px-2 py-1 rounded-lg bg-gray-300 text-xs font-semibold hover:bg-gray-400 transition text-gray-900"
+                        >
+                            Edit
+                        </button>
+                        <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="flex-1 px-2 py-1 rounded-lg bg-red-500 text-xs font-semibold hover:bg-red-400 transition text-white"
+                        >
+                            Delete
+                        </button>
+                        </div>
+                    </div>
+                    ))}
+                </div>
+                )}
+            </section>
+        </div>
+      )}
+
+      {/* ========================================= */}
+      {/* MODE 2: ACTIVITY LOG */}
+      {/* ========================================= */}
+      {mode === "Activity Log" && (
+         <div 
+            className="flex-1 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col"
+            style={{ backgroundColor: 'var(--color-bg-card)' }}
+         >
+            <div className="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h3 className="font-bold text-gray-700">System Logs</h3>
+                <button 
+                    onClick={fetchHistory} 
+                    className="text-xs text-blue-600 hover:underline"
+                >
+                    Refresh Logs
+                </button>
+            </div>
+            
+            <div className="flex-1 overflow-auto">
+                <table className="w-full text-left text-sm text-gray-600">
+                    <thead className="bg-gray-100 text-gray-800 uppercase font-bold border-b border-gray-300 sticky top-0">
+                        <tr>
+                        <th className="p-4">Time</th>
+                        <th className="p-4">User</th>
+                        <th className="p-4">Action</th>
+                        <th className="p-4">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                        {historyLoading && (
+                            <tr><td colSpan="4" className="p-6 text-center text-gray-500">Loading history...</td></tr>
+                        )}
+                        {!historyLoading && logs.length === 0 && (
+                            <tr><td colSpan="4" className="p-6 text-center text-gray-500">No history found.</td></tr>
+                        )}
+                        {logs.map((log) => (
+                        <tr key={log.id} className="hover:bg-gray-50 transition">
+                            <td className="p-4 whitespace-nowrap text-gray-500">{new Date(log.createdAt).toLocaleString()}</td>
+                            <td className="p-4">
+                                <span className="bg-gray-200 text-gray-800 px-2 py-1 rounded text-xs font-bold">{log.user}</span>
+                            </td>
+                            <td className="p-4">
+                                <span 
+                                    className="font-bold text-xs px-2 py-1 rounded border"
+                                    style={{ color: 'var(--color-accent-utility)', borderColor: 'var(--color-accent-utility)' }}
+                                >
+                                    {log.action}
+                                </span>
+                            </td>
+                            <td className="p-4 text-gray-900 font-medium">{log.details}</td>
+                        </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+         </div>
+      )}
+
     </div>
   );
 }

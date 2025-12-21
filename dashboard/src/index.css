@@ -1,21 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* BACKGROUNDS: Soft, not too bright */
-  --color-bg-primary: #F7F8FC;     /* Soft Off-White/Cream for the main page */
-  --color-bg-card: #f3d7b7;        /* Pure White for panels/cards/containers */
+  /* BACKGROUNDS: Warm Cream & Clean White */
+  --color-bg-primary: #FFFBF2;     /* Very pale cream/marble */
+  --color-bg-card: #FFFFFF;        /* Pure white */
 
   /* TEXT COLORS */
-  --color-text-dark: #1A202C;       /* Deep Charcoal for primary text */
-  --color-text-subtle: #64748b;    /* Slate 500 for secondary/hint text */
+  --color-text-dark: #292524;      /* Warm Charcoal */
+  --color-text-subtle: #78716C;    /* Warm Stone Gray */
 
   /* ACCENTS */
-  --color-accent-total: #f97316;    /* Warm Orange/Bronze for Price/Total/SERVED status */
-  --color-accent-success: #059669; /* Muted Emerald for Confirm Payment */
-  --color-accent-utility: #3b82f6; /* Muted Blue for Refresh/Utility buttons */
+  --color-accent-total: #D97706;   /* Rich Gold/Amber (Price) */
+  --color-accent-success: #15803D; /* Deep Basil Green (Confirm) */
+  --color-accent-utility: #B45309; /* Bronze/Copper (Buttons) */
   
-  /* STATUS BACKGROUNDS */
-  --color-bg-status-served: #ffe6d5; /* Light Peach/Orange background for SERVED status badge */
+  /* STATUS */
+  --color-bg-status-served: #FEF3C7; /* Pale Gold Background */
+  
+  /* DASHBOARD CARD COLORS (Safety) */
+  --color-status-pending: #F97316;   /* Orange */
+  --color-status-ready: #0EA5E9;     /* Blue */
+  --color-status-served: #10B981;    /* Emerald */
 }
 
 /* Apply the base styles to the body */

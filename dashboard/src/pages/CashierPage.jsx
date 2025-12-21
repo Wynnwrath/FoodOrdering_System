@@ -79,8 +79,16 @@ export default function CashierPage() {
 
   // Use the total from the order object if available, otherwise compute it
   const totalDue = selectedOrder ? selectedOrder.total ?? computedTotal : 0;
-  const numericCash = Number(cashGiven) || 0;
-  const change = Math.max(numericCash - totalDue, 0);
+  
+  // FIX 1: Ensure numericCash is never negative
+  const numericCash = Math.max(0, Number(cashGiven) || 0);
+  
+  // FIX 2: ROUNDING LOGIC
+  // Standard JS math can result in 4.900000001. 
+  // We calculate the difference, multiply by 100, round it, then divide by 100.
+  // This ensures the 'change' variable is a clean 2-decimal number (e.g., 4.9)
+  const rawChange = numericCash - totalDue;
+  const change = Math.max(0, Math.round(rawChange * 100) / 100);
 
   const handleSelectOrder = (orderId) => {
     setSelectedOrderId(orderId);
@@ -96,10 +104,11 @@ export default function CashierPage() {
     }
 
     try {
+      // The 'change' here is now the clean, rounded number calculated above
       const payload = {
         status: "PAID",
         paidAmount: numericCash,
-        change,
+        change, 
       };
 
       const res = await fetch(
@@ -117,9 +126,7 @@ export default function CashierPage() {
       console.log("Order paid:", data);
 
       alert(
-        `Order #${selectedOrder.id} marked as PAID.\nChange: $${change.toFixed(
-          2
-        )}`
+        `Ticket #${selectedOrder.ticketNumber} marked as PAID.\nChange: $${change.toFixed(2)}`
       );
 
       setOrders((prev) => prev.filter((o) => o.id !== selectedOrder.id));
@@ -132,7 +139,6 @@ export default function CashierPage() {
   };
 
   return (
-    // Reverting to use the CSS variable for the main page BG
     <div 
       className="min-h-[calc(100vh-4rem)] w-full p-2 sm:p-4 flex flex-col md:flex-row gap-4 text-gray-900"
       style={{ backgroundColor: 'var(--color-bg-primary)' }} 
@@ -150,7 +156,6 @@ export default function CashierPage() {
               Select an order to process payment.
             </p>
           </div>
-          {/* Reverting to use the CSS variable for the Utility button */}
           <button
             onClick={fetchServedOrders}
             className="px-3 py-1 rounded-lg text-xs font-semibold hover:opacity-80 transition text-white"
@@ -172,17 +177,20 @@ export default function CashierPage() {
                 key={order.id}
                 onClick={() => handleSelectOrder(order.id)}
                 className={`w-full text-left p-3 rounded-lg border transition-all shadow-sm ${
-                    selectedOrderId === order.id
-                      ? "bg-blue-50 border-blue-400" 
-                      : "bg-white border-gray-200 hover:bg-gray-50" 
-                  }`}
+                  selectedOrderId === order.id
+                    ? "bg-blue-50 border-blue-400" 
+                    : "bg-white border-gray-200 hover:bg-gray-50" 
+                }`}
               >
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                   <div>
-                    <p className="text-sm font-semibold">Order #{order.id}</p>
-                    {order.tableNumber && (
+                    {/* Show Ticket Number */}
+                    <p className="text-sm font-semibold">Ticket #{order.ticketNumber}</p>
+                    
+                    {order.tableNumber && order.tableNumber > 0 && (
                       <p className="text-[10px] sm:text-xs text-gray-500">Table: {order.tableNumber}</p>
                     )}
+                    
                     <p className="text-[10px] sm:text-xs text-gray-400 mt-1">
                       Items: {order.orders?.length ?? 0}
                     </p>
@@ -225,8 +233,10 @@ export default function CashierPage() {
           </div>
           {selectedOrder && (
             <div className="text-[10px] sm:text-xs text-gray-500 text-right">
-              <p>Order #{selectedOrder.id}</p>
-              {selectedOrder.tableNumber && <p>Table {selectedOrder.tableNumber}</p>}
+              <p>Ticket #{selectedOrder.ticketNumber}</p>
+              {selectedOrder.tableNumber && selectedOrder.tableNumber > 0 && (
+                  <p>Table {selectedOrder.tableNumber}</p>
+              )}
             </div>
           )}
         </header>
@@ -270,7 +280,6 @@ export default function CashierPage() {
                     selectedOrder.tax ?? selectedOrder.subtotal * 0.03 ?? totalDue - totalDue / 1.03
                   ).toFixed(2)}</span>
                 </div>
-                {/* Reverting to use the CSS variable for the Total Due color */}
                 <div 
                   className="flex justify-between text-lg font-bold mt-2"
                   style={{ color: 'var(--color-accent-total)' }}
@@ -285,19 +294,23 @@ export default function CashierPage() {
             <div className="border-t border-gray-300 pt-4 flex flex-col gap-3">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <label className="text-sm text-gray-600 w-full sm:w-32">Cash given</label>
+                
                 <input
                   type="number"
+                  min="0"
                   step="0.01"
                   className="w-full sm:w-auto px-3 py-2 rounded-lg bg-gray-50 border border-gray-300 text-sm focus:outline-none focus:ring focus:ring-blue-500"
                   value={cashGiven}
                   onChange={(e) => setCashGiven(e.target.value)}
+                  onKeyDown={(e) => {
+                      if(e.key === '-' || e.key === 'e') e.preventDefault();
+                  }}
                   placeholder="e.g. 500"
                 />
               </div>
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <span className="text-sm text-gray-600 w-full sm:w-32">Change</span>
-                {/* Reverting to use the CSS variable for the Change color */}
                 <span 
                   className="text-lg font-semibold"
                   style={{ color: 'var(--color-accent-success)' }}
@@ -307,7 +320,6 @@ export default function CashierPage() {
               </div>
 
               <div className="mt-2 flex flex-col sm:flex-row gap-2">
-                {/* Reverting to use the CSS variable for the Confirm Payment button */}
                 <button
                   onClick={handleConfirmPayment}
                   disabled={totalDue <= 0 || numericCash < totalDue}
@@ -316,7 +328,6 @@ export default function CashierPage() {
                 >
                   Confirm Payment
                 </button>
-                {/* Using standard Tailwind class for Cancel button */}
                 <button
                   onClick={() => {
                     setSelectedOrderId(null);

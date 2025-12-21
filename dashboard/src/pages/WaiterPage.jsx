@@ -40,7 +40,7 @@ function MenuItem({ item, onAdd }) {
 }
 
 // --- Helper: Order Cart ---
-function OrderCart({ orderItems, onRemove, onPlaceOrder, orderTotal, tableNumber, setTableNumber }) {
+function OrderCart({ orderItems, onRemove, onUpdateQuantity, onPlaceOrder, orderTotal, tableNumber, setTableNumber }) {
   if (orderItems.length === 0) {
     return (
       <div 
@@ -62,19 +62,39 @@ function OrderCart({ orderItems, onRemove, onPlaceOrder, orderTotal, tableNumber
       </div>
       
       {/* Scrollable Cart Items */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {orderItems.map((item) => (
-          <div key={item.itemId} className="flex justify-between items-center text-gray-900 text-sm">
-            <div className="flex items-center gap-2">
+          <div key={item.itemId} className="flex justify-between items-center text-gray-900 text-sm bg-gray-50 p-2 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-3">
                 <button 
-                    className="w-5 h-5 flex items-center justify-center text-xs font-bold text-red-600 bg-red-50 rounded-full hover:bg-red-100 border border-red-200" 
+                    className="w-6 h-6 flex items-center justify-center text-xs font-bold text-red-600 bg-white rounded-full hover:bg-red-50 border border-red-200 shadow-sm" 
                     onClick={() => onRemove(item.itemId)}
                 >
                     &times;
                 </button>
-                <span className="font-semibold">{item.quantity} × {item.name}</span>
+                
+                {/* --- EDITABLE QUANTITY INPUT --- */}
+                <div className="flex items-center gap-2">
+                    <input 
+                        type="number" 
+                        min="1"
+                        className="w-12 p-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none font-bold"
+                        value={item.quantity} 
+                        onChange={(e) => onUpdateQuantity(item.itemId, e.target.value)}
+                        onBlur={(e) => {
+                            // If user leaves it blank, reset to 1
+                            if (!e.target.value || parseInt(e.target.value) < 1) {
+                                onUpdateQuantity(item.itemId, 1);
+                            }
+                        }}
+                    />
+                    <span className="font-semibold truncate max-w-[100px] sm:max-w-xs">{item.name}</span>
+                </div>
             </div>
-            <span className="text-gray-700 font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+            
+            <span className="text-gray-700 font-medium whitespace-nowrap">
+                ${(item.price * (Number(item.quantity) || 0)).toFixed(2)}
+            </span>
           </div>
         ))}
       </div>
@@ -82,9 +102,12 @@ function OrderCart({ orderItems, onRemove, onPlaceOrder, orderTotal, tableNumber
       {/* Fixed Bottom Section */}
       <div className="p-3 border-t border-gray-300 bg-gray-50">
           <div className="mb-2">
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Table Number <span className="text-red-500">*</span>
+              </label>
               <input
                   type="number"
-                  placeholder="Table No."
+                  placeholder="e.g. 5"
                   value={tableNumber}
                   onChange={(e) => setTableNumber(e.target.value)}
                   className="w-full p-2 bg-white border border-gray-300 rounded text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
@@ -112,7 +135,7 @@ function OrderCart({ orderItems, onRemove, onPlaceOrder, orderTotal, tableNumber
 // --- Main Waiter Page Component ---
 export default function WaiterPage() {
   const [mode, setMode] = useState("Take Order");
-  const [mobileTab, setMobileTab] = useState("menu"); // 'menu' or 'cart' for mobile view
+  const [mobileTab, setMobileTab] = useState("menu"); 
 
   // ----- Data State -----
   const [activeCategory, setActiveCategory] = useState("");
@@ -177,7 +200,7 @@ export default function WaiterPage() {
   }, [menuItems, activeCategory]);
 
   const orderTotal = useMemo(() => {
-    return orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    return orderItems.reduce((acc, item) => acc + item.price * (Number(item.quantity) || 0), 0);
   }, [orderItems]);
 
   // --- Handlers ---
@@ -185,19 +208,24 @@ export default function WaiterPage() {
     setOrderItems((prev) => {
       const exists = prev.find((i) => i.itemId === item.id);
       if (exists) {
-        return prev.map((i) => i.itemId === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map((i) => i.itemId === item.id ? { ...i, quantity: Number(i.quantity) + 1 } : i);
       }
       return [...prev, { itemId: item.id, name: item.name, price: Number(item.price), quantity: 1 }];
     });
   };
 
   const handleRemoveItem = (id) => {
+    setOrderItems((prev) => prev.filter((i) => i.itemId !== id));
+  };
+
+  const handleUpdateQuantity = (itemId, newQty) => {
     setOrderItems((prev) => {
-      const exists = prev.find((i) => i.itemId === id);
-      if (exists.quantity > 1) {
-        return prev.map((i) => i.itemId === id ? { ...i, quantity: i.quantity - 1 } : i);
-      }
-      return prev.filter((i) => i.itemId !== id);
+       return prev.map((i) => {
+         if (i.itemId === itemId) {
+             return { ...i, quantity: newQty };
+         }
+         return i;
+       });
     });
   };
 
@@ -206,10 +234,21 @@ export default function WaiterPage() {
     const tax = subtotal * 0.05;
     const total = subtotal + tax;
 
-    // --- FIX: Using 'orderItems' here to match Backend Controller ---
+    const validItems = orderItems.filter(i => Number(i.quantity) > 0);
+    
+    if (validItems.length === 0) {
+        alert("Please add items with valid quantities.");
+        return;
+    }
+
+    if (!tableNumber || tableNumber.trim() === "") {
+        alert("Table number is required!");
+        return;
+    }
+
     const body = {
-      tableNumber: tableNumber ? Number(tableNumber) : null,
-      orderItems: orderItems.map((i) => ({ itemId: i.itemId, quantity: i.quantity })), 
+      tableNumber: Number(tableNumber),
+      orderItems: validItems.map((i) => ({ itemId: i.itemId, quantity: Number(i.quantity) })), 
       subtotal: subtotal.toFixed(2),
       tax: tax.toFixed(2),
       total: total.toFixed(2),
@@ -227,7 +266,10 @@ export default function WaiterPage() {
 
         setOrderItems([]);
         setTableNumber("");
-        alert(`Order #${result.order.id} placed!`);
+        
+        // --- CHANGED: Use ticketNumber here ---
+        alert(`Ticket #${result.order.ticketNumber} placed!`);
+        
     } catch (err) {
         setOrderPlacementError(err.message || "Error placing order");
     }
@@ -277,7 +319,7 @@ export default function WaiterPage() {
       {mode === "Take Order" && (
         <div className="flex-1 flex flex-col overflow-hidden relative">
             
-            {/* Mobile View Toggle (Menu vs Cart) - Visible only on small screens */}
+            {/* Mobile View Toggle */}
             <div className="md:hidden flex border-b border-gray-300 bg-white shrink-0">
                 <button 
                     onClick={() => setMobileTab("menu")}
@@ -289,17 +331,15 @@ export default function WaiterPage() {
                     onClick={() => setMobileTab("cart")}
                     className={`flex-1 py-3 text-sm font-bold text-center border-b-2 ${mobileTab === 'cart' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'}`}
                 >
-                    Cart ({orderItems.reduce((a, b) => a + b.quantity, 0)})
+                    Cart ({orderItems.reduce((a, b) => a + (Number(b.quantity)||0), 0)})
                 </button>
             </div>
 
             {/* Content Container */}
             <div className="flex-1 flex overflow-hidden p-2 gap-3">
                 
-                {/* 1. Menu Section (Hidden on mobile if tab is 'cart') */}
+                {/* 1. Menu Section */}
                 <section className={`flex-1 flex-col overflow-hidden ${mobileTab === 'cart' ? 'hidden md:flex' : 'flex'}`}>
-                    
-                    {/* Category Pills */}
                     <div className="flex gap-2 mb-2 overflow-x-auto pb-1 shrink-0 scrollbar-hide">
                         {categories.map((cat) => (
                             <button
@@ -317,7 +357,6 @@ export default function WaiterPage() {
                         ))}
                     </div>
 
-                    {/* Menu Grid */}
                     <div className="flex-1 overflow-y-auto pb-10">
                         {loadingMenu && <div className="text-center p-4">Loading...</div>}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -328,11 +367,12 @@ export default function WaiterPage() {
                     </div>
                 </section>
 
-                {/* 2. Cart Section (Hidden on mobile if tab is 'menu') */}
+                {/* 2. Cart Section */}
                 <section className={`w-full md:w-80 flex-col ${mobileTab === 'menu' ? 'hidden md:flex' : 'flex'}`}>
                     <OrderCart 
                         orderItems={orderItems}
                         onRemove={handleRemoveItem}
+                        onUpdateQuantity={handleUpdateQuantity}
                         onPlaceOrder={handlePlaceOrder}
                         orderTotal={orderTotal}
                         tableNumber={tableNumber}
@@ -353,7 +393,8 @@ export default function WaiterPage() {
                 {readyOrders.map((order) => (
                     <div key={order.id} className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex flex-col gap-2">
                         <div className="flex justify-between font-bold text-gray-800">
-                            <span>#{order.id}</span>
+                            {/* --- CHANGED: Use Ticket Number here --- */}
+                            <span>Ticket #{order.ticketNumber}</span>
                             <span className="text-green-600 text-sm bg-green-50 px-2 py-1 rounded-full">{order.status}</span>
                         </div>
                         {order.tableNumber && <div className="text-xs text-gray-500">Table: {order.tableNumber}</div>}

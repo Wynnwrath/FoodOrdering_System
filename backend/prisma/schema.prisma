@@ -4,17 +4,19 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  // NOTE: Do NOT add 'url' here, it is in prisma.config.ts
 }
 
 model Order {
-  id          Int      @id @default(autoincrement())
-  status      String
-  tableNumber Int?    
-  subtotal    Float
-  tax         Float
-  total       Float
-  createdAt   DateTime @default(now())
-  items       OrderItem[]
+  id           Int      @id @default(autoincrement())
+  ticketNumber Int      @default(0) 
+  status       String
+  tableNumber  Int?    
+  subtotal     Float
+  tax          Float
+  total        Float
+  createdAt    DateTime @default(now())
+  items        OrderItem[]
 }
 
 model Menu {
@@ -23,15 +25,22 @@ model Menu {
   price     Float
   category  String?
   imageUrl  String?
-  items     OrderItem[]
+  items     OrderItem[] 
 }
 
 model OrderItem {
   id        Int    @id @default(autoincrement())
-  order     Order  @relation(fields: [orderId], references: [id])
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId   Int
-  menu      Menu   @relation(fields: [menuId], references: [id])
+  menu      Menu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
   menuId    Int
   quantity  Int
 }
 
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  details   String
+  user      String
+  createdAt DateTime @default(now())
+}

@@ -1,4 +1,5 @@
-import { prisma } from "../db.js"; // Import the Prisma client
+import { prisma } from "../db.js";
+import { logActivity } from "../logger.js"; // Importing from src/logger.js
 
 // GET /menu
 export const getMenu = async (req, res) => {
@@ -27,6 +28,9 @@ export const createMenuItem = async (req, res) => {
       },
     });
 
+    // --- LOGGING ---
+    await logActivity("MENU_CREATE", `Created item: ${name} ($${price})`, "Manager");
+
     res.status(201).json({ success: true, item });
   } catch (err) {
     console.error("Menu POST error:", err);
@@ -50,6 +54,9 @@ export const updateMenuItem = async (req, res) => {
       },
     });
 
+    // --- LOGGING ---
+    await logActivity("MENU_UPDATE", `Updated item: ${name} ($${price})`, "Manager");
+
     res.json({ success: true, item: updatedItem });
   } catch (err) {
     console.error("Menu PUT error:", err);
@@ -62,9 +69,18 @@ export const deleteMenuItem = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
+    // 1. Fetch item first so we know its name for the log
+    const item = await prisma.menu.findUnique({ where: { id } });
+
+    // 2. Delete it
     await prisma.menu.delete({
       where: { id },
     });
+
+    // --- LOGGING ---
+    if (item) {
+        await logActivity("MENU_DELETE", `Deleted item: ${item.name}`, "Manager");
+    }
 
     res.json({ success: true, message: "Menu item deleted" });
   } catch (err) {

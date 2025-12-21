@@ -1,0 +1,8 @@
+-- CreateTable
+CREATE TABLE "ActivityLog" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "action" TEXT NOT NULL,
+    "details" TEXT NOT NULL,
+    "user" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

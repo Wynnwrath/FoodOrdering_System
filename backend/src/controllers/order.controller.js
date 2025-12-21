@@ -1,15 +1,27 @@
 import { prisma } from "../db.js";
+import { logActivity } from "../logger.js"; 
 
-// Utility function (moved from original index.js)
 const roundMoney = (x) => Math.round(x * 100) / 100;
-
 
 // POST /orders
 export const createOrder = async (req, res) => {
   try {
     const { tableNumber, orderItems } = req.body;
 
-    // 1. Calculate totals
+    // --- 1. CALCULATE TICKET NUMBER ---
+    // Since "End Day" now sets EVERYTHING to "ARCHIVED",
+    // this count will be 0 after you press End Day.
+    const activeCount = await prisma.order.count({
+      where: {
+        status: { not: "ARCHIVED" } 
+      }
+    });
+    
+    // If activeCount is 0, nextTicketNumber becomes 1.
+    const nextTicketNumber = activeCount + 1;
+    // ----------------------------------
+
+    // Calculate totals
     const menuItems = await prisma.menu.findMany({
       where: { id: { in: orderItems.map((item) => item.itemId) } },
     });
@@ -27,13 +39,14 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    const TAX_RATE = 0.05; // 5% tax
+    const TAX_RATE = 0.05; 
     const tax = roundMoney(subtotal * TAX_RATE);
     const total = roundMoney(subtotal + tax);
 
-    // 2. Create the Order
+    // Create Order with ticketNumber
     const newOrder = await prisma.order.create({
       data: {
+        ticketNumber: nextTicketNumber, 
         tableNumber: tableNumber ? Number(tableNumber) : null,
         status: "PENDING",
         subtotal,
@@ -53,6 +66,12 @@ export const createOrder = async (req, res) => {
       },
     });
 
+    await logActivity(
+        "ORDER_CREATE", 
+        `Ticket #${nextTicketNumber} created for Table ${tableNumber || 'N/A'}. Total: $${total}`, 
+        "Waiter"
+    );
+
     res.status(201).json({ success: true, order: newOrder });
   } catch (err) {
     console.error("Order POST error:", err);
@@ -60,20 +79,13 @@ export const createOrder = async (req, res) => {
   }
 };
 
-
-// GET /orders?status=...
+// ... (Rest of your file: getOrders, updateOrderStatus, checkTableAvailability remain unchanged)
 export const getOrders = async (req, res) => {
   try {
     const { status } = req.query;
+    const whereClause = status ? { status } : { status: { notIn: ["PAID", "ARCHIVED"] } };
 
-    let orders;
-    
-    // Find all orders that are NOT 'PAID'
-    const whereClause = status 
-      ? { status } 
-      : { status: { not: "PAID" } };
-
-    orders = await prisma.order.findMany({
+    const orders = await prisma.order.findMany({
         where: whereClause,
         orderBy: { createdAt: "asc" },
         include: {
@@ -83,12 +95,10 @@ export const getOrders = async (req, res) => {
         },
     });
 
-    // Custom data shaping logic (moved from original index.js)
     const shaped = orders.map(order => ({
       ...order,
       orders: order.items.map(item => ({
         ...item,
-        // Rename 'items' to 'orders' to match your frontend usage
         itemId: item.menuId, 
       })),
     }));
@@ -100,12 +110,10 @@ export const getOrders = async (req, res) => {
   }
 };
 
-
-// PUT /orders/:id/status
 export const updateOrderStatus = async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { status } = req.body;
+    const { status, paidAmount, change } = req.body; 
 
     const updated = await prisma.order.update({
       where: { id },
@@ -115,6 +123,22 @@ export const updateOrderStatus = async (req, res) => {
       },
     });
 
+    let logMessage = `Ticket #${updated.ticketNumber} status changed to ${status}`;
+    let userRole = "System";
+
+    if (status === "PAID") {
+        userRole = "Cashier";
+        if (paidAmount) {
+            logMessage += `. Paid: $${paidAmount}, Change: $${change}`;
+        }
+    } else if (status === "READY") {
+        userRole = "Kitchen";
+    } else if (status === "SERVED") {
+        userRole = "Waiter";
+    }
+
+    await logActivity("ORDER_UPDATE", logMessage, userRole);
+
     res.json({ success: true, order: updated });
   } catch (err) {
     console.error("Order status PUT error:", err);
@@ -122,8 +146,6 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-
-// GET /tables/check/:tableNumber
 export const checkTableAvailability = async (req, res) => {
   try {
     const tableNumber = Number(req.params.tableNumber);
@@ -131,11 +153,10 @@ export const checkTableAvailability = async (req, res) => {
     const existing = await prisma.order.findFirst({
       where: {
         tableNumber,
-        status: { not: "PAID" }, // Check for any active status
+        status: { notIn: ["PAID", "ARCHIVED"] }, 
       },
     });
 
-    // If an order exists (is active), return that order, otherwise null
     res.json({ activeOrder: existing || null }); 
   } catch (err) {
     console.error("Table check error:", err);

@@ -56,12 +56,12 @@ export default function KitchenPage() {
         <div>
           <h1 className="text-2xl font-bold">Kitchen Orders</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Showing orders with status: <span className="font-semibold">PENDING</span>
+            Showing orders with status: <span className="font-semibold text-orange-600">PENDING</span>
           </p>
         </div>
         <button
           onClick={fetchOrders}
-          className="px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-80 transition text-white"
+          className="px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-80 transition text-white shadow-sm"
           style={{ backgroundColor: 'var(--color-accent-utility)' }}
         >
           Refresh
@@ -72,72 +72,50 @@ export default function KitchenPage() {
       {loading && <p className="text-gray-600">Loading orders...</p>}
       {error && <p className="text-red-600 mb-2">{error}</p>}
       {!loading && orders.length === 0 && (
-        <p className="text-gray-500 mt-6">No pending orders right now.</p>
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+            <p className="text-lg">No pending orders.</p>
+            <p className="text-sm">Kitchen is clear!</p>
+        </div>
       )}
 
       {/* Orders grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 flex-1 overflow-y-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 flex-1 overflow-y-auto pb-10">
         {orders.map((order) => {
-          const computedTotal =
-            order.items?.reduce((sum, item) => {
-              const price = item.menu?.price || 0;
-              return sum + price * item.quantity;
-            }, 0) ?? 0;
-          const orderTotal = order.total ?? computedTotal;
-
           return (
-            <div
-              key={order.id}
-              className="rounded-xl p-4 flex flex-col shadow-xl transition hover:scale-[1.01]"
-              style={{ backgroundColor: 'var(--color-bg-card)', minHeight: '300px' }}
+            // MATCHING CARD STYLE FROM WAITER PAGE
+            <div 
+                key={order.id} 
+                className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex flex-col gap-2"
             >
-              <div className="flex justify-between items-center mb-1">
-                <h2 className="font-semibold text-lg truncate">Order #{order.id}</h2>
-                <span 
-                  className="text-xs px-2 py-1 rounded-full"
-                  style={{ color: 'var(--color-accent-total)', backgroundColor: 'var(--color-bg-status-served)' }}
+                <div className="flex justify-between font-bold text-gray-800">
+                    {/* --- CHANGED: Use Ticket Number --- */}
+                    <span>Ticket #{order.ticketNumber}</span>
+                    <span className="text-orange-600 text-sm bg-orange-50 px-2 py-1 rounded-full">
+                        {order.status}
+                    </span>
+                </div>
+
+                {order.tableNumber ? (
+                    <div className="text-xs text-gray-500 font-semibold">Table: {order.tableNumber}</div>
+                ) : (
+                    <div className="text-xs text-gray-400 italic">No Table</div>
+                )}
+
+                <div className="text-sm text-gray-600 border-t border-b py-2 my-1 max-h-40 overflow-y-auto space-y-1">
+                    {order.items?.map((item, idx) => (
+                        <div key={idx} className="flex justify-between">
+                            <span>{item.quantity} × {item.menu?.name || "Unknown Item"}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <button 
+                    onClick={() => markCompleted(order.id)}
+                    className="w-full py-2 rounded-lg text-white font-bold text-sm mt-auto shadow-sm hover:opacity-90 transition"
+                    style={{ backgroundColor: 'var(--color-accent-success)' }}
                 >
-                  {order.status}
-                </span>
-              </div>
-
-              {/* Order items detail area - Use flex-1 to push total and button down */}
-              <div className="space-y-1 max-h-40 overflow-auto pr-1 text-sm flex-1">
-                {order.items?.map((item) => {
-                  const name = item.menu?.name || "Unknown item";
-                  const price = item.menu?.price || 0;
-                  const qty = item.quantity;
-                  const lineTotal = qty * price;
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex justify-between items-center"
-                    >
-                      <span className="truncate">{qty} × {name}</span>
-                      <span className="text-gray-700">${lineTotal.toFixed(2)}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="border-t border-gray-300 mt-3 pt-2 text-sm flex justify-between text-gray-700">
-                <span>Total:</span>
-                <span 
-                  className="font-bold" 
-                  style={{ color: 'var(--color-accent-total)' }}
-                >
-                  ${orderTotal.toFixed(2)}
-                </span>
-              </div>
-
-              <button
-                onClick={() => markCompleted(order.id)}
-                className="mt-3 w-full py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition text-white"
-                style={{ backgroundColor: 'var(--color-accent-success)' }}
-              >
-                Mark as Completed
-              </button>
+                    Mark Ready
+                </button>
             </div>
           );
         })}
