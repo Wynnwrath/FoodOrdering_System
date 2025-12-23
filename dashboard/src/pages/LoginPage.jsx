@@ -120,7 +120,7 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-8 text-center text-xs text-gray-400">
-                &copy; 2024 Ambrosia Systems. All rights reserved.
+                &copy; 2025 Ambrosia Systems. All rights reserved.
             </div>
         </div>
       </div>
