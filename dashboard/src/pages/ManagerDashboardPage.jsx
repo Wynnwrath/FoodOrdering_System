@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 const API_BASE = "http://localhost:3000";
 const MODES = ["Dashboard", "Order History"];
 
-// --- Card Component ---
 function StatCard({ title, value, colorVar }) {
     return (
         <div 
@@ -27,7 +26,6 @@ function StatCard({ title, value, colorVar }) {
     );
 }
 
-// --- Bar Chart Component ---
 function TopItemsChart({ items }) {
     if (!items || items.length === 0) return <p className="text-gray-500 text-sm italic">No sales data yet.</p>;
     const maxCount = Math.max(...items.map(i => i.count));
@@ -58,7 +56,7 @@ export default function ManagerDashboardPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [archiveMessage, setArchiveMessage] = useState("");
-    const [activeTab, setActiveTab] = useState("charts"); // Mobile tab for Dashboard
+    const [activeTab, setActiveTab] = useState("charts");
 
     // --- DATA STATE ---
     const [stats, setStats] = useState({
@@ -71,12 +69,9 @@ export default function ManagerDashboardPage() {
         recentOrders: [], 
     });
     
-    // State specifically for the History Mode
     const [historyOrders, setHistoryOrders] = useState([]);
 
     // --- FETCHERS ---
-    
-    // 1. Get Live Stats (Dashboard Mode)
     const fetchSalesStats = async () => {
         try {
             setLoading(true);
@@ -93,15 +88,12 @@ export default function ManagerDashboardPage() {
         }
     };
 
-    // 2. Get Archived History (History Mode)
     const fetchHistory = async () => {
         try {
             setLoading(true);
-            // We use the existing orders endpoint filtering for ARCHIVED status
             const res = await fetch(`${API_BASE}/orders?status=ARCHIVED`);
             if (!res.ok) throw new Error("Failed to load history");
             const data = await res.json();
-            // Sort by newest first just in case
             const sorted = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setHistoryOrders(sorted);
         } catch (err) {
@@ -112,7 +104,6 @@ export default function ManagerDashboardPage() {
         }
     };
 
-    // Switch data source when mode changes
     useEffect(() => {
         if (mode === "Dashboard") fetchSalesStats();
         if (mode === "Order History") fetchHistory();
@@ -129,7 +120,6 @@ export default function ManagerDashboardPage() {
 
             setArchiveMessage(data.message);
             
-            // Refresh whichever view we are on
             if (mode === "Dashboard") fetchSalesStats();
             else fetchHistory();
 
@@ -150,7 +140,6 @@ export default function ManagerDashboardPage() {
             className="p-3 sm:p-6 min-h-screen text-gray-900 flex flex-col gap-4 sm:gap-6"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}
         >
-            {/* --- HEADER SECTION --- */}
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <div>
@@ -158,9 +147,7 @@ export default function ManagerDashboardPage() {
                         <p className="text-gray-500 text-xs sm:text-sm">Overview & Daily Management.</p>
                     </div>
 
-                    {/* ACTION BUTTONS */}
                     <div className="flex flex-wrap w-full md:w-auto gap-2">
-                         {/* MODE TOGGLE */}
                         <div 
                             className="flex p-1 rounded-lg shadow-sm bg-gray-200 mr-2"
                             style={{ backgroundColor: 'var(--color-bg-card)' }}
@@ -185,8 +172,7 @@ export default function ManagerDashboardPage() {
                         >
                             Refresh
                         </button>
-                        
-                        {/* Only show End Day on Dashboard Mode */}
+
                         {mode === "Dashboard" && (
                             <button
                                 onClick={handleArchiveAndReset}
@@ -214,14 +200,12 @@ export default function ManagerDashboardPage() {
             {/* ========================================= */}
             {mode === "Dashboard" && !loading && (
                 <>
-                    {/* 1. FINANCIAL STATS */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         <StatCard title="Revenue" value={`$${stats.totalRevenue.toFixed(2)}`} colorVar="--color-accent-total" />
                         <StatCard title="Paid Orders" value={stats.totalTransactions} colorVar="--color-accent-utility" />
                         <div className="hidden lg:block lg:col-span-2"></div> 
                     </div>
 
-                    {/* 2. KITCHEN LIVE STATUS */}
                     <div>
                         <h3 className="text-sm font-bold text-gray-800 mb-2 ml-1">Live Kitchen Status</h3>
                         <div className="flex overflow-x-auto gap-3 pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible">
@@ -231,7 +215,6 @@ export default function ManagerDashboardPage() {
                         </div>
                     </div>
 
-                    {/* 3. CHARTS & LOGS */}
                     <div className="flex p-1 bg-gray-200 rounded-lg lg:hidden mb-2">
                         <button onClick={() => setActiveTab("charts")} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition ${activeTab === 'charts' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Top Items</button>
                         <button onClick={() => setActiveTab("logs")} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition ${activeTab === 'logs' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Order Log</button>
@@ -255,9 +238,6 @@ export default function ManagerDashboardPage() {
                 </>
             )}
 
-            {/* ========================================= */}
-            {/* MODE 2: ORDER HISTORY (Archived)          */}
-            {/* ========================================= */}
             {mode === "Order History" && !loading && (
                 <div className="flex-1 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col">
                     <div className="p-4 border-b border-gray-200 bg-gray-50">
@@ -277,8 +257,6 @@ export default function ManagerDashboardPage() {
     );
 }
 
-// --- REUSABLE TABLE COMPONENT ---
-// I extracted this to reuse it for both Active Dashboard and History View
 function OrdersTable({ orders, isHistory = false }) {
     if (!orders || orders.length === 0) {
         return <div className="p-6 text-center text-gray-400">No orders to display.</div>;
@@ -304,7 +282,7 @@ function OrdersTable({ orders, isHistory = false }) {
                             <span className="hidden sm:inline text-[10px] ml-1">({order.id})</span>
                         </td>
                         <td className="p-2 sm:p-3 text-gray-600">
-                             {/* If history, show full date. If dashboard, show time only is usually enough, but full date is safer */}
+                    
                             {new Date(order.createdAt).toLocaleString([], {
                                 month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
                             })}

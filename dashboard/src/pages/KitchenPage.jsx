@@ -82,13 +82,11 @@ export default function KitchenPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 flex-1 overflow-y-auto pb-10">
         {orders.map((order) => {
           return (
-            // MATCHING CARD STYLE FROM WAITER PAGE
             <div 
                 key={order.id} 
                 className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex flex-col gap-2"
             >
                 <div className="flex justify-between font-bold text-gray-800">
-                    {/* --- CHANGED: Use Ticket Number --- */}
                     <span>Ticket #{order.ticketNumber}</span>
                     <span className="text-orange-600 text-sm bg-orange-50 px-2 py-1 rounded-full">
                         {order.status}

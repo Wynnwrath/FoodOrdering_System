@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Ensure the import name matches the file name exactly (case-sensitive!)
 import Image from "../assets/restaurant-image.jpg"; 
 
 // --- Static User Credentials ---
@@ -35,20 +34,15 @@ export default function LoginPage() {
   };
 
   return (
-    // UPDATED CONTAINER: Removed 'bg-gray-50' to avoid gaps, ensured w-full h-screen
     <div className="min-h-screen w-full flex">
       
-      {/* LEFT SIDE: Branding & Image */}
-      {/* Changed to 'flex-1' so it takes all available space left by the form */}
       <div className="hidden md:flex flex-1 relative bg-gray-900 justify-center items-center overflow-hidden">
-        {/* Background Image */}
         <img 
             src={Image}
             alt="Ambrosia Restaurant" 
             className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
         
-        {/* Overlay Content */}
         <div className="relative z-10 text-center px-4">
             <h1 className="text-5xl lg:text-7xl font-bold text-white tracking-tight mb-4 drop-shadow-lg">
                 Ambrosia
@@ -58,16 +52,12 @@ export default function LoginPage() {
             </p>
         </div>
 
-        {/* Gradient Overlay */}
         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-900 to-transparent"></div>
       </div>
 
-      {/* RIGHT SIDE: Login Form */}
-      {/* Fixed width (w-full on mobile, fixed standard width on desktop) prevents stretching weirdly */}
       <div className="w-full md:w-[480px] lg:w-[500px] flex flex-col justify-center items-center p-8 sm:p-12 relative shadow-2xl z-20 bg-white shrink-0">
         
         <div className="w-full max-w-sm">
-            {/* Mobile-only Branding Title */}
             <div className="md:hidden text-center mb-10">
                  <h1 className="text-4xl font-bold text-gray-800">Ambrosia</h1>
                  <p className="text-gray-500 text-xs uppercase tracking-widest mt-1">System Login</p>

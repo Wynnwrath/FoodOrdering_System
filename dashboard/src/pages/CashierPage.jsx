@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 
-// NOTE: Ensure your API_BASE is correctly pointing to your Node.js port (3000)
-// when running via adb reverse. This line is correct for that setup.
 const API_BASE = "http://localhost:3000";
 
 export default function CashierPage() {
@@ -16,7 +14,6 @@ export default function CashierPage() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [cashGiven, setCashGiven] = useState("");
 
-  // Load SERVED orders
   const fetchServedOrders = async () => {
     try {
       setOrdersLoading(true);
@@ -77,16 +74,8 @@ export default function CashierPage() {
     }, 0);
   }, [selectedOrder, menuMap]);
 
-  // Use the total from the order object if available, otherwise compute it
   const totalDue = selectedOrder ? selectedOrder.total ?? computedTotal : 0;
-  
-  // FIX 1: Ensure numericCash is never negative
   const numericCash = Math.max(0, Number(cashGiven) || 0);
-  
-  // FIX 2: ROUNDING LOGIC
-  // Standard JS math can result in 4.900000001. 
-  // We calculate the difference, multiply by 100, round it, then divide by 100.
-  // This ensures the 'change' variable is a clean 2-decimal number (e.g., 4.9)
   const rawChange = numericCash - totalDue;
   const change = Math.max(0, Math.round(rawChange * 100) / 100);
 
@@ -104,7 +93,6 @@ export default function CashierPage() {
     }
 
     try {
-      // The 'change' here is now the clean, rounded number calculated above
       const payload = {
         status: "PAID",
         paidAmount: numericCash,
