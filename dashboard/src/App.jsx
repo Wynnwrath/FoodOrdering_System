@@ -1,4 +1,4 @@
-import { useState } from "react"; // Add useState
+import { useState } from "react"; 
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
 import MainPage from "./pages/MainPage"; 
 import CashierPage from "./pages/CashierPage";
@@ -8,19 +8,15 @@ import ManagerPage from "./pages/ManagerPage";
 import LoginPage from "./pages/LoginPage";
 import ManagerDashboardPage from "./pages/ManagerDashboardPage"; 
 
-// --- Layout for Staff (Waiter/Cashier/Kitchen) ---
 function StaffLayout() {
   const navigate = useNavigate();
   const [isConfirming, setIsConfirming] = useState(false);
 
   const handleLogout = () => {
     if (isConfirming) {
-      // 2. Second click: Actually log out
       navigate("/login");
     } else {
-      // 1. First click: Ask for confirmation
       setIsConfirming(true);
-      // Reset if they don't click again within 3 seconds
       setTimeout(() => setIsConfirming(false), 3000);
     }
   };
@@ -33,7 +29,7 @@ function StaffLayout() {
         onClick={handleLogout}
         className={`fixed bottom-4 right-4 z-50 px-5 py-2 text-sm font-bold rounded-full shadow-xl transition-all ${
             isConfirming 
-            ? "bg-red-800 text-white scale-110 animate-pulse" // Visual cue for "Confirm"
+            ? "bg-red-800 text-white scale-110 animate-pulse" 
             : "bg-red-600 text-white hover:bg-red-700 opacity-90"
         }`}
       >

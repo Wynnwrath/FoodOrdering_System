@@ -4,7 +4,6 @@ const API_BASE = "http://localhost:3000";
 
 const MODES = ["Take Order", "Serve Orders"];
 
-// --- Helper: Menu Item ---
 function MenuItem({ item, onAdd }) {
   return (
     <div 
@@ -39,7 +38,6 @@ function MenuItem({ item, onAdd }) {
   );
 }
 
-// --- Helper: Order Cart ---
 function OrderCart({ orderItems, onRemove, onUpdateQuantity, onPlaceOrder, orderTotal, tableNumber, setTableNumber }) {
   if (orderItems.length === 0) {
     return (
@@ -60,8 +58,7 @@ function OrderCart({ orderItems, onRemove, onUpdateQuantity, onPlaceOrder, order
       <div className="p-3 border-b border-gray-300 bg-gray-50">
         <h3 className="text-lg font-bold text-gray-900">Current Order</h3>
       </div>
-      
-      {/* Scrollable Cart Items */}
+
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {orderItems.map((item) => (
           <div key={item.itemId} className="flex justify-between items-center text-gray-900 text-sm bg-gray-50 p-2 rounded-lg border border-gray-200">
@@ -73,7 +70,6 @@ function OrderCart({ orderItems, onRemove, onUpdateQuantity, onPlaceOrder, order
                     &times;
                 </button>
                 
-                {/* --- EDITABLE QUANTITY INPUT --- */}
                 <div className="flex items-center gap-2">
                     <input 
                         type="number" 
@@ -98,8 +94,7 @@ function OrderCart({ orderItems, onRemove, onUpdateQuantity, onPlaceOrder, order
           </div>
         ))}
       </div>
-
-      {/* Fixed Bottom Section */}
+      
       <div className="p-3 border-t border-gray-300 bg-gray-50">
           <div className="mb-2">
               <label className="block text-xs font-bold text-gray-700 mb-1">
@@ -132,12 +127,10 @@ function OrderCart({ orderItems, onRemove, onUpdateQuantity, onPlaceOrder, order
   );
 }
 
-// --- Main Waiter Page Component ---
 export default function WaiterPage() {
   const [mode, setMode] = useState("Take Order");
   const [mobileTab, setMobileTab] = useState("menu"); 
 
-  // ----- Data State -----
   const [activeCategory, setActiveCategory] = useState("");
   const [orderItems, setOrderItems] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
@@ -191,7 +184,6 @@ export default function WaiterPage() {
     }
   }, [mode]);
 
-  // --- Computations ---
   const categories = useMemo(() => ["All", ...new Set(menuItems.map((i) => i.category))], [menuItems]);
   
   const filteredMenu = useMemo(() => {
@@ -203,7 +195,6 @@ export default function WaiterPage() {
     return orderItems.reduce((acc, item) => acc + item.price * (Number(item.quantity) || 0), 0);
   }, [orderItems]);
 
-  // --- Handlers ---
   const handleAddItem = (item) => {
     setOrderItems((prev) => {
       const exists = prev.find((i) => i.itemId === item.id);
@@ -267,7 +258,6 @@ export default function WaiterPage() {
         setOrderItems([]);
         setTableNumber("");
         
-        // --- CHANGED: Use ticketNumber here ---
         alert(`Ticket #${result.order.ticketNumber} placed!`);
         
     } catch (err) {
@@ -288,13 +278,11 @@ export default function WaiterPage() {
     }
   };
 
-  // --- RENDER ---
   return (
     <div 
         className="h-screen w-full flex flex-col text-gray-900 overflow-hidden"
         style={{ backgroundColor: 'var(--color-bg-primary)' }}
     >
-      {/* Top Bar: Mode Selector */}
       <div className="p-2 shrink-0">
           <div 
             className="flex p-1 rounded-lg shadow-sm"
@@ -315,11 +303,9 @@ export default function WaiterPage() {
           </div>
       </div>
 
-      {/* --- TAKE ORDER MODE --- */}
       {mode === "Take Order" && (
         <div className="flex-1 flex flex-col overflow-hidden relative">
             
-            {/* Mobile View Toggle */}
             <div className="md:hidden flex border-b border-gray-300 bg-white shrink-0">
                 <button 
                     onClick={() => setMobileTab("menu")}
@@ -335,10 +321,8 @@ export default function WaiterPage() {
                 </button>
             </div>
 
-            {/* Content Container */}
             <div className="flex-1 flex overflow-hidden p-2 gap-3">
-                
-                {/* 1. Menu Section */}
+ 
                 <section className={`flex-1 flex-col overflow-hidden ${mobileTab === 'cart' ? 'hidden md:flex' : 'flex'}`}>
                     <div className="flex gap-2 mb-2 overflow-x-auto pb-1 shrink-0 scrollbar-hide">
                         {categories.map((cat) => (
@@ -367,7 +351,6 @@ export default function WaiterPage() {
                     </div>
                 </section>
 
-                {/* 2. Cart Section */}
                 <section className={`w-full md:w-80 flex-col ${mobileTab === 'menu' ? 'hidden md:flex' : 'flex'}`}>
                     <OrderCart 
                         orderItems={orderItems}
@@ -384,7 +367,6 @@ export default function WaiterPage() {
         </div>
       )}
 
-      {/* --- SERVE ORDERS MODE --- */}
       {mode === "Serve Orders" && (
         <div className="flex-1 overflow-y-auto p-4">
              <h2 className="text-xl font-bold mb-4 text-gray-900">Ready to Serve</h2>
@@ -393,7 +375,6 @@ export default function WaiterPage() {
                 {readyOrders.map((order) => (
                     <div key={order.id} className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex flex-col gap-2">
                         <div className="flex justify-between font-bold text-gray-800">
-                            {/* --- CHANGED: Use Ticket Number here --- */}
                             <span>Ticket #{order.ticketNumber}</span>
                             <span className="text-green-600 text-sm bg-green-50 px-2 py-1 rounded-full">{order.status}</span>
                         </div>

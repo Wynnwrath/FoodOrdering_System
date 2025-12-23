@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
-// Adapter must include the database URL
 const adapter = new PrismaBetterSqlite3({
   url: "file:./prisma/dev.db",
 });

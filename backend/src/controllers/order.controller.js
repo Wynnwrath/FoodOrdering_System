@@ -8,20 +8,15 @@ export const createOrder = async (req, res) => {
   try {
     const { tableNumber, orderItems } = req.body;
 
-    // --- 1. CALCULATE TICKET NUMBER ---
-    // Since "End Day" now sets EVERYTHING to "ARCHIVED",
-    // this count will be 0 after you press End Day.
     const activeCount = await prisma.order.count({
       where: {
         status: { not: "ARCHIVED" } 
       }
     });
     
-    // If activeCount is 0, nextTicketNumber becomes 1.
     const nextTicketNumber = activeCount + 1;
     // ----------------------------------
 
-    // Calculate totals
     const menuItems = await prisma.menu.findMany({
       where: { id: { in: orderItems.map((item) => item.itemId) } },
     });
@@ -79,7 +74,6 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// ... (Rest of your file: getOrders, updateOrderStatus, checkTableAvailability remain unchanged)
 export const getOrders = async (req, res) => {
   try {
     const { status } = req.query;

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 export default function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [isOpen, setIsOpen] = useState(false); // Controls the mobile menu
+    const [isOpen, setIsOpen] = useState(false); 
 
     const handleLogout = () => {
         if(window.confirm("Are you sure you want to log out?")) {
@@ -28,14 +28,12 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16">
                     
-                    {/* LEFT: Brand Title */}
                     <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate('/main/dashboard')}>
                         <h1 className="text-xl font-bold tracking-tight text-gray-800">
                             Ambrosia <span style={{ color: 'var(--color-accent-utility)' }}>System</span>
                         </h1>
                     </div>
-
-                    {/* CENTER/RIGHT: Desktop Links (Hidden on Mobile) */}
+                    
                     <div className="hidden md:flex md:items-center md:space-x-4">
                         {navLinks.map((link) => {
                             const isActive = location.pathname === link.path;
@@ -63,7 +61,6 @@ export default function Navbar() {
                         </button>
                     </div>
 
-                    {/* RIGHT: Mobile Hamburger Button (Visible ONLY on Mobile) */}
                     <div className="flex items-center md:hidden">
                         <button
                             onClick={() => setIsOpen(!isOpen)}
@@ -71,12 +68,10 @@ export default function Navbar() {
                         >
                             <span className="sr-only">Open main menu</span>
                             {isOpen ? (
-                                // X Icon
                                 <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             ) : (
-                                // Hamburger Icon
                                 <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
@@ -86,7 +81,6 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* MOBILE MENU DROPDOWN (Rendered only when isOpen is true) */}
             {isOpen && (
                 <div className="md:hidden border-t border-gray-200 bg-white">
                     <div className="px-2 pt-2 pb-3 space-y-1">
@@ -97,7 +91,7 @@ export default function Navbar() {
                                     key={link.name}
                                     onClick={() => {
                                         navigate(link.path);
-                                        setIsOpen(false); // Close menu after clicking
+                                        setIsOpen(false);
                                     }}
                                     className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium ${
                                         isActive ? "bg-gray-100" : "hover:bg-gray-50"

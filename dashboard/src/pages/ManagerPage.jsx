@@ -7,10 +7,7 @@ const MODES = ["Menu Editor", "Activity Log"];
 
 export default function ManagerPage() {
   const [mode, setMode] = useState("Menu Editor");
-
-  // ==============================
-  // 1. MENU EDITOR STATE & LOGIC
-  // ==============================
+  
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,9 +22,6 @@ export default function ManagerPage() {
   const [imagePreview, setImagePreview] = useState("");
   const [imageUrl, setImageUrl] = useState("");
 
-  // ==============================
-  // 2. HISTORY STATE & LOGIC
-  // ==============================
   const [logs, setLogs] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
@@ -57,7 +51,6 @@ export default function ManagerPage() {
       .finally(() => setHistoryLoading(false));
   };
 
-  // Fetch data when switching modes
   useEffect(() => {
     if (mode === "Menu Editor") fetchMenu();
     if (mode === "Activity Log") fetchHistory();
@@ -181,14 +174,12 @@ export default function ManagerPage() {
       className="h-full w-full p-4 flex flex-col gap-4 text-gray-900 overflow-hidden"
       style={{ backgroundColor: 'var(--color-bg-primary)' }}
     >
-      {/* --- TOP BAR: TITLE & MODE TOGGLE --- */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
            <h1 className="text-2xl font-bold">Manager Hub</h1>
            <p className="text-sm text-gray-500">Manage menu items and view system history.</p>
         </div>
         
-        {/* Mode Selector */}
         <div 
             className="flex p-1 rounded-lg shadow-sm w-full sm:w-auto"
             style={{ backgroundColor: 'var(--color-bg-card)' }}
@@ -207,10 +198,6 @@ export default function ManagerPage() {
             ))}
         </div>
       </div>
-
-      {/* ========================================= */}
-      {/* MODE 1: MENU EDITOR */}
-      {/* ========================================= */}
       {mode === "Menu Editor" && (
         <div className="flex-1 flex flex-col gap-4 overflow-hidden">
             {/* Form Section */}
@@ -277,8 +264,7 @@ export default function ManagerPage() {
                {/* Image Input */}
                 <div className="flex-1">
                     <label className="block text-xs text-gray-600 mb-1">Image</label>
-                    
-                    {/* Add accept="image/*" to hint Android to show Camera/Gallery */}
+
                     <input 
                         type="file" 
                         accept="image/*" 
@@ -375,9 +361,6 @@ export default function ManagerPage() {
         </div>
       )}
 
-      {/* ========================================= */}
-      {/* MODE 2: ACTIVITY LOG */}
-      {/* ========================================= */}
       {mode === "Activity Log" && (
          <div 
             className="flex-1 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col"

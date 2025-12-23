@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  // NOTE: Do NOT add 'url' here, it is in prisma.config.ts
+  // NOTEEEE: Do NOT add 'url' here, it is in prisma.config.ts 
 }
 
 model Order {

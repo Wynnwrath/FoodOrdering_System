@@ -1,5 +1,6 @@
 import { prisma } from "../db.js";
 
+// Dashboard Stats Endpoint or Controller bato idk
 // GET /dashboard/stats
 export const getDashboardStats = async (req, res) => {
   try {
@@ -80,18 +81,13 @@ export const getDashboardStats = async (req, res) => {
 // THIS IS THE FIX FOR "END DAY"
 export const archiveDailySales = async (req, res) => {
   try {
-    // Update EVERYTHING that isn't already archived.
-    // This catches PENDING, READY, SERVED, and PAID.
+
     const result = await prisma.order.updateMany({
       where: { 
         status: { not: "ARCHIVED" } 
       },
       data: { status: "ARCHIVED" },
     });
-    
-    // Result: 
-    // 1. All Dashboard counts become 0.
-    // 2. Ticket Counter (in order.controller) will see 0 active orders and reset to #1.
     
     res.json({ success: true, message: `Day Ended. Archived ${result.count} orders. Ticket counter reset.` });
   } catch (err) {

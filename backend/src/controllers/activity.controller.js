@@ -3,8 +3,8 @@ import { prisma } from "../db.js";
 export const getHistory = async (req, res) => {
   try {
     const history = await prisma.activityLog.findMany({
-      orderBy: { createdAt: "desc" }, // Newest first
-      take: 100, // Limit to last 100 events
+      orderBy: { createdAt: "desc" }, 
+      take: 100, 
     });
     res.json(history);
   } catch (err) {

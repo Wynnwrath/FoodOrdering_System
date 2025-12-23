@@ -1,36 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  /* BACKGROUNDS: Warm Cream & Clean White */
-  --color-bg-primary: #FFFBF2;     /* Very pale cream/marble */
-  --color-bg-card: #FFFFFF;        /* Pure white */
+  --color-bg-primary: #FFFBF2;     
+  --color-bg-card: #FFFFFF;       
 
   /* TEXT COLORS */
-  --color-text-dark: #292524;      /* Warm Charcoal */
-  --color-text-subtle: #78716C;    /* Warm Stone Gray */
+  --color-text-dark: #292524;    
+  --color-text-subtle: #78716C;   
 
   /* ACCENTS */
-  --color-accent-total: #D97706;   /* Rich Gold/Amber (Price) */
-  --color-accent-success: #15803D; /* Deep Basil Green (Confirm) */
-  --color-accent-utility: #B45309; /* Bronze/Copper (Buttons) */
+  --color-accent-total: #D97706;   
+  --color-accent-success: #15803D; 
+  --color-accent-utility: #B45309; 
   
   /* STATUS */
-  --color-bg-status-served: #FEF3C7; /* Pale Gold Background */
+  --color-bg-status-served: #FEF3C7;
   
-  /* DASHBOARD CARD COLORS (Safety) */
-  --color-status-pending: #F97316;   /* Orange */
-  --color-status-ready: #0EA5E9;     /* Blue */
-  --color-status-served: #10B981;    /* Emerald */
+  --color-status-pending: #F97316;   
+  --color-status-ready: #0EA5E9;     
+  --color-status-served: #10B981;  
 }
 
-/* Apply the base styles to the body */
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-dark);
 }
 
-/* --- OPTIONAL CUSTOM UTILITY CLASSES --- */
-/* You can define classes here for easier use than the style={{...}} attribute */
 .text-gold-accent { color: var(--color-accent-gold); }
 .bg-success-accent { background-color: var(--color-accent-success); }
 .text-success-accent { color: var(--color-accent-success); }
